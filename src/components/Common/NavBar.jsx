@@ -24,8 +24,8 @@ const NavBar = () => {
     }, [showDropdown, isMobileMenuOpen]);
 
     const CartButton = () => (
-        <Link 
-            to="/cart" 
+        <Link
+            to="/cart"
             className="relative p-2 text-gray-700 hover:text-rose-500 transition-colors"
         >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,10 +51,10 @@ const NavBar = () => {
                     </span>
                 </div>
                 <span className="hidden sm:block font-medium">{user?.firstName}</span>
-                <svg 
-                    className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
+                <svg
+                    className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -130,7 +130,7 @@ const NavBar = () => {
             <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 fixed top-0 w-full z-50">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        
+
                         {/* Logo */}
                         <Link to="/" className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full flex items-center justify-center">
@@ -146,32 +146,32 @@ const NavBar = () => {
                         <div className="hidden md:flex items-center space-x-8">
                             {/* Category navigation */}
                             <nav className="flex items-center space-x-6">
-                                <Link 
-                                    to="/category/mujer" 
+                                <Link
+                                    to="/category/mujer"
                                     className="text-gray-700 hover:text-rose-500 transition-colors font-medium"
                                 >
                                     Mujer
                                 </Link>
-                                <Link 
-                                    to="/category/hombre" 
+                                <Link
+                                    to="/category/hombre"
                                     className="text-gray-700 hover:text-rose-500 transition-colors font-medium"
                                 >
                                     Hombre
                                 </Link>
-                                <Link 
-                                    to="/category/ninos" 
+                                <Link
+                                    to="/category/ninos"
                                     className="text-gray-700 hover:text-rose-500 transition-colors font-medium"
                                 >
                                     Niños
                                 </Link>
-                                <Link 
-                                    to="/category/accesorios" 
+                                <Link
+                                    to="/category/accesorios"
                                     className="text-gray-700 hover:text-rose-500 transition-colors font-medium"
                                 >
                                     Accesorios
                                 </Link>
-                                <Link 
-                                    to="/ofertas" 
+                                <Link
+                                    to="/ofertas"
                                     className="text-rose-500 hover:text-rose-600 transition-colors font-medium"
                                 >
                                     Ofertas
@@ -182,8 +182,8 @@ const NavBar = () => {
                             <div className="flex items-center space-x-4">
                                 {user?.role !== 'Admin' && (
                                     <>
-                                        <Link 
-                                            to="/wishlist" 
+                                        <Link
+                                            to="/wishlist"
                                             className="p-2 text-gray-700 hover:text-rose-500 transition-colors"
                                         >
                                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +193,7 @@ const NavBar = () => {
                                         <CartButton />
                                     </>
                                 )}
-                                
+
                                 {isAuthenticated ? (
                                     <>
                                         {user?.role === 'Admin' ? (
@@ -250,9 +250,9 @@ const NavBar = () => {
 
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
+                    <div className="md:hidden bg-white border-t border-gray-100 shadow-lg relative z-50">
                         <div className="container mx-auto px-4 py-4 space-y-4">
-                            
+
                             {/* Categories */}
                             <div className="space-y-2">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Categorías</p>
@@ -377,7 +377,7 @@ const NavBar = () => {
                                         Iniciar Sesión
                                     </Link>
                                     <Link
-                                        to="/register"
+                                        to="/register" // ← Esta ruta YA está correcta
                                         className="block p-3 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-xl text-center font-medium hover:from-rose-600 hover:to-purple-700 transition-all duration-200"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
@@ -389,11 +389,12 @@ const NavBar = () => {
                     </div>
                 )}
             </header>
-            
+
             {/* Mobile menu overlay */}
             {isMobileMenuOpen && (
-                <div 
-                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                <div
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"
+                    // ↑ Cambiado de z-40 a z-30
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
