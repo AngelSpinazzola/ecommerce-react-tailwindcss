@@ -56,6 +56,118 @@ class OrderService {
     }
   }
 
+  // ===== NUEVOS MÉTODOS PARA SISTEMA DE PAGOS =====
+
+  // Subir comprobante de pago
+  async uploadPaymentReceipt(orderId, file) {
+    try {
+      const formData = new FormData();
+      formData.append('receiptFile', file);
+      
+      const response = await apiService.post(`/order/${orderId}/payment-receipt`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading payment receipt:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Obtener órdenes pendientes de revisión (admin)
+  async getOrdersPendingReview() {
+    try {
+      const response = await apiService.get('/order/pending-review');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting pending orders:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Aprobar pago (admin)
+  async approvePayment(orderId, adminNotes = '') {
+    try {
+      const response = await apiService.put(`/order/${orderId}/approve-payment`, {
+        adminNotes
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error approving payment:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Rechazar pago (admin)
+  async rejectPayment(orderId, adminNotes) {
+    try {
+      const response = await apiService.put(`/order/${orderId}/reject-payment`, {
+        adminNotes
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error rejecting payment:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Marcar como enviado (admin)
+  async markAsShipped(orderId, trackingNumber, shippingProvider, adminNotes = '') {
+    try {
+      const response = await apiService.put(`/order/${orderId}/mark-shipped`, {
+        trackingNumber,
+        shippingProvider,
+        adminNotes
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error marking as shipped:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Marcar como entregado (admin)
+  async markAsDelivered(orderId, adminNotes = '') {
+    try {
+      const response = await apiService.put(`/order/${orderId}/mark-delivered`, {
+        adminNotes
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error marking as delivered:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Obtener URL del comprobante de pago
+  async getPaymentReceipt(orderId) {
+    try {
+      const response = await apiService.get(`/order/${orderId}/payment-receipt`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting payment receipt:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // Actualizar estado de orden (admin)
+  async updateOrderStatus(orderId, status, adminNotes = '') {
+    try {
+      const response = await apiService.put(`/order/${orderId}/status`, {
+        status,
+        adminNotes
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  // ===== MÉTODOS AUXILIARES ACTUALIZADOS =====
+
   // Maneja errores
   handleError(error) {
     if (error.response?.data?.message) {
@@ -155,24 +267,64 @@ class OrderService {
     return price.toFixed(2);
   }
 
+  // ===== NUEVOS MÉTODOS PARA ESTADOS DE PAGO =====
+
   // Obtiene color del estado para UI
   getStatusColor(status) {
     const colors = {
-      pending: 'text-yellow-600',
-      completed: 'text-green-600',
-      cancelled: 'text-red-600'
+      'pending_payment': 'text-yellow-600 bg-yellow-50',
+      'payment_submitted': 'text-blue-600 bg-blue-50',
+      'payment_approved': 'text-green-600 bg-green-50',
+      'payment_rejected': 'text-red-600 bg-red-50',
+      'shipped': 'text-purple-600 bg-purple-50',
+      'delivered': 'text-green-700 bg-green-100',
+      'cancelled': 'text-red-600 bg-red-50',
+      // Estados legacy
+      'pending': 'text-yellow-600 bg-yellow-50',
+      'completed': 'text-green-600 bg-green-50'
     };
-    return colors[status] || 'text-gray-600';
+    return colors[status] || 'text-gray-600 bg-gray-50';
   }
 
   // Obtiene texto amigable del estado
   getStatusText(status) {
     const texts = {
-      pending: 'Pendiente',
-      completed: 'Completada',
-      cancelled: 'Cancelada'
+      'pending_payment': 'Esperando comprobante',
+      'payment_submitted': 'Comprobante en revisión',
+      'payment_approved': 'Pago aprobado',
+      'payment_rejected': 'Comprobante rechazado',
+      'shipped': 'Enviado',
+      'delivered': 'Entregado',
+      'cancelled': 'Cancelado',
+      // Estados legacy
+      'pending': 'Pendiente',
+      'completed': 'Completada'
     };
     return texts[status] || status;
+  }
+
+  // Obtiene descripción detallada del estado
+  getStatusDescription(status) {
+    const descriptions = {
+      'pending_payment': 'Adjunta tu comprobante de pago para continuar',
+      'payment_submitted': 'Estamos revisando tu comprobante de pago',
+      'payment_approved': 'Tu pago fue aprobado. Preparando envío',
+      'payment_rejected': 'Tu comprobante fue rechazado. Intenta nuevamente',
+      'shipped': 'Tu pedido está en camino',
+      'delivered': 'Tu pedido fue entregado exitosamente',
+      'cancelled': 'Esta orden fue cancelada'
+    };
+    return descriptions[status] || '';
+  }
+
+  // Verifica si el estado permite subir comprobante
+  canUploadReceipt(status) {
+    return status === 'pending_payment' || status === 'payment_rejected';
+  }
+
+  // Verifica si el estado permite acciones de admin
+  canAdminModify(status) {
+    return ['payment_submitted', 'payment_approved', 'shipped'].includes(status);
   }
 }
 

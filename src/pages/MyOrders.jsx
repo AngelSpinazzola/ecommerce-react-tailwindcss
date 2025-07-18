@@ -53,16 +53,47 @@ const MyOrders = () => {
   };
 
   const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    const colors = {
+      'pending_payment': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      'payment_submitted': 'bg-blue-100 text-blue-800 border-blue-200',
+      'payment_approved': 'bg-green-100 text-green-800 border-green-200',
+      'payment_rejected': 'bg-red-100 text-red-800 border-red-200',
+      'shipped': 'bg-purple-100 text-purple-800 border-purple-200',
+      'delivered': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'cancelled': 'bg-red-100 text-red-800 border-red-200',
+      // Estados legacy
+      'completed': 'bg-green-100 text-green-800 border-green-200',
+      'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  const getStatusIcon = (status) => {
+    const icons = {
+      'pending_payment': '💳',
+      'payment_submitted': '📄',
+      'payment_approved': '✅',
+      'payment_rejected': '❌',
+      'shipped': '🚚',
+      'delivered': '📦',
+      'cancelled': '🚫',
+      'completed': '✅',
+      'pending': '⏳'
+    };
+    return icons[status] || '📋';
+  };
+
+  const getUniqueStatuses = () => {
+    const statusCounts = orders.reduce((acc, order) => {
+      acc[order.status] = (acc[order.status] || 0) + 1;
+      return acc;
+    }, {});
+    
+    return Object.keys(statusCounts).map(status => ({
+      status,
+      count: statusCounts[status],
+      label: orderService.getStatusText(status)
+    }));
   };
 
   // Si no está autenticado, redirigir al login
@@ -93,48 +124,45 @@ const MyOrders = () => {
     );
   }
 
+  const uniqueStatuses = getUniqueStatuses();
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       <NavBar />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Mis Compras</h1>
-          <p className="text-gray-600 mt-2">Historial completo de tus compras</p>
+          <p className="text-gray-600 mt-2">Historial completo de tus compras y estados de pago</p>
         </div>
 
-        {/* Filtros */}
+        {/* Filtros mejorados */}
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Filtrar por estado</h2>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedStatus('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${selectedStatus === 'all'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                selectedStatus === 'all'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
             >
               Todas ({orders.length})
             </button>
-            <button
-              onClick={() => setSelectedStatus('completed')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${selectedStatus === 'completed'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            {uniqueStatuses.map(({ status, count, label }) => (
+              <button
+                key={status}
+                onClick={() => setSelectedStatus(status)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedStatus === status
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
-            >
-              Completadas ({orders.filter(o => o.status === 'completed').length})
-            </button>
-            <button
-              onClick={() => setSelectedStatus('cancelled')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${selectedStatus === 'cancelled'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-            >
-              Canceladas ({orders.filter(o => o.status === 'cancelled').length})
-            </button>
+              >
+                {getStatusIcon(status)} {label} ({count})
+              </button>
+            ))}
           </div>
         </div>
 
@@ -178,7 +206,7 @@ const MyOrders = () => {
                   {selectedStatus === 'all' ? 'No tienes órdenes aún' : `No tienes órdenes ${orderService.getStatusText(selectedStatus).toLowerCase()}`}
                 </h3>
                 <p className="mt-2 text-gray-500">
-                  {selectedStatus === 'all' ? '¡Explora nuestros productos y haz tu primera compra!' : 'Cambia el filtro para ver otras órdenes'}
+                  {selectedStatus === 'all' ? '¡Explora nuestros productos gaming y haz tu primera compra!' : 'Cambia el filtro para ver otras órdenes'}
                 </p>
                 {selectedStatus === 'all' && (
                   <div className="mt-6">
@@ -194,7 +222,7 @@ const MyOrders = () => {
             ) : (
               <div className="space-y-6">
                 {filteredOrders.map((order) => (
-                  <div key={order.id} className="bg-white shadow rounded-lg overflow-hidden">
+                  <div key={order.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                     {/* Header de la orden */}
                     <div className="px-6 py-4 border-b border-gray-200">
                       <div className="flex items-center justify-between">
@@ -202,8 +230,8 @@ const MyOrders = () => {
                           <h3 className="text-lg font-medium text-gray-900">
                             Orden #{order.id}
                           </h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(order.status)}`}>
-                            {orderService.getStatusText(order.status)}
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeColor(order.status)}`}>
+                            {getStatusIcon(order.status)} {orderService.getStatusText(order.status)}
                           </span>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -212,7 +240,7 @@ const MyOrders = () => {
                           </span>
                           <button
                             onClick={() => toggleOrderDetails(order.id)}
-                            className="text-indigo-600 hover:text-indigo-800 font-medium"
+                            className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
                           >
                             {expandedOrder === order.id ? 'Ocultar detalles' : 'Ver detalles'}
                           </button>
@@ -222,6 +250,13 @@ const MyOrders = () => {
                         <span>{orderService.formatDate(order.createdAt)}</span>
                         <span>{order.itemsCount} artículos</span>
                       </div>
+                      
+                      {/* Descripción del estado */}
+                      {orderService.getStatusDescription(order.status) && (
+                        <div className="mt-2 text-sm text-gray-600">
+                          {orderService.getStatusDescription(order.status)}
+                        </div>
+                      )}
                     </div>
 
                     {/* Detalles expandibles */}
@@ -240,19 +275,68 @@ const MyOrders = () => {
                                 <dt className="font-medium text-gray-500">Email:</dt>
                                 <dd className="text-gray-900">{order.customerEmail}</dd>
                               </div>
+                              {order.customerPhone && (
+                                <div>
+                                  <dt className="font-medium text-gray-500">Teléfono:</dt>
+                                  <dd className="text-gray-900">{order.customerPhone}</dd>
+                                </div>
+                              )}
+                              {order.customerAddress && (
+                                <div>
+                                  <dt className="font-medium text-gray-500">Dirección:</dt>
+                                  <dd className="text-gray-900">{order.customerAddress}</dd>
+                                </div>
+                              )}
                             </dl>
                           </div>
 
-                          {/* Acciones */}
+                          {/* Información adicional y acciones */}
                           <div>
-                            <h4 className="text-sm font-medium text-gray-900 mb-3">Acciones</h4>
+                            <h4 className="text-sm font-medium text-gray-900 mb-3">Información adicional</h4>
+                            <div className="space-y-2 text-sm mb-4">
+                              {order.trackingNumber && (
+                                <div>
+                                  <dt className="font-medium text-gray-500">Número de seguimiento:</dt>
+                                  <dd className="text-gray-900 font-mono">{order.trackingNumber}</dd>
+                                </div>
+                              )}
+                              {order.shippingProvider && (
+                                <div>
+                                  <dt className="font-medium text-gray-500">Transportista:</dt>
+                                  <dd className="text-gray-900">{order.shippingProvider}</dd>
+                                </div>
+                              )}
+                              {order.adminNotes && (
+                                <div>
+                                  <dt className="font-medium text-gray-500">Notas:</dt>
+                                  <dd className="text-gray-900">{order.adminNotes}</dd>
+                                </div>
+                              )}
+                            </div>
+                            
                             <div className="space-y-2">
                               <Link
                                 to={`/order-confirmation/${order.id}`}
-                                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                className="inline-flex items-center px-4 py-2 border border-indigo-300 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                               >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
                                 Ver orden completa
                               </Link>
+                              
+                              {orderService.canUploadReceipt(order.status) && (
+                                <Link
+                                  to={`/order-confirmation/${order.id}`}
+                                  className="inline-flex items-center px-4 py-2 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100 transition-colors ml-2"
+                                >
+                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                  </svg>
+                                  Subir comprobante
+                                </Link>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -265,11 +349,36 @@ const MyOrders = () => {
           </>
         )}
 
+        {/* Resumen */}
+        {!loading && !error && orders.length > 0 && (
+          <div className="bg-white shadow rounded-lg p-6 mt-8">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Resumen de compras</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="text-2xl font-bold text-blue-600">{orders.length}</div>
+                <div className="text-sm text-blue-800">Total de órdenes</div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="text-2xl font-bold text-green-600">
+                  ${orderService.formatPrice(orders.reduce((sum, order) => sum + order.total, 0))}
+                </div>
+                <div className="text-sm text-green-800">Total gastado</div>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="text-2xl font-bold text-purple-600">
+                  {orders.filter(o => o.status === 'delivered').length}
+                </div>
+                <div className="text-sm text-purple-800">Órdenes entregadas</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Botón volver */}
         <div className="mt-8 text-center">
           <Link
-            to="/dashboard"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 hover:text-indigo-800"
+            to="/"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 hover:text-indigo-800 transition-colors"
           >
             ← Volver al Inicio
           </Link>
