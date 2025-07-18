@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
@@ -8,20 +8,18 @@ const NavBar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
     const { getCartItemsCount } = useCart();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (showDropdown && !event.target.closest('.dropdown-container')) {
                 setShowDropdown(false);
             }
-            if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
-                setIsMobileMenuOpen(false);
-            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showDropdown, isMobileMenuOpen]);
+    }, [showDropdown]);
 
     const CartButton = () => (
         <Link
@@ -124,6 +122,11 @@ const NavBar = () => {
             )}
         </div>
     );
+
+    const handleMobileNavigation = (path) => {
+        setIsMobileMenuOpen(false);
+        navigate(path);
+    };
 
     return (
         <>
@@ -235,7 +238,7 @@ const NavBar = () => {
                         </div>
 
                         {/* Mobile Menu Button */}
-                        <div className="md:hidden mobile-menu-container">
+                        <div className="md:hidden">
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="p-2 text-gray-700 hover:text-gray-900 transition-colors"
@@ -368,36 +371,26 @@ const NavBar = () => {
                                     </button>
                                 </>
                             ) : (
-                                <div className="space-y-2">
-                                    <Link
-                                        to="/login"
-                                        className="block p-3 text-gray-700 hover:text-rose-500 hover:bg-gray-50 rounded-xl text-center font-medium transition-all duration-200"
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                <div className="space-y-3">
+                                    <button
+                                        onClick={() => handleMobileNavigation('/login')}
+                                        className="block w-full p-3 text-gray-700 hover:text-rose-500 hover:bg-gray-50 rounded-xl text-center font-medium transition-all duration-200 border border-gray-200"
                                     >
                                         Iniciar Sesión
-                                    </Link>
-                                    <Link
-                                        to="/register" // ← Esta ruta YA está correcta
-                                        className="block p-3 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-xl text-center font-medium hover:from-rose-600 hover:to-purple-700 transition-all duration-200"
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => handleMobileNavigation('/register')}
+                                        className="block w-full p-3 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-xl text-center font-medium hover:from-rose-600 hover:to-purple-700 transition-all duration-200"
                                     >
                                         Registrarse
-                                    </Link>
+                                    </button>
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
             </header>
-
-            {/* Mobile menu overlay */}
-            {isMobileMenuOpen && (
-                <div
-                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"
-                    // ↑ Cambiado de z-40 a z-30
-                    onClick={() => setIsMobileMenuOpen(false)}
-                />
-            )}
         </>
     );
 };
