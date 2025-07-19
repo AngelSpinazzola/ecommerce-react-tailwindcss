@@ -8,6 +8,21 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
     const [activeView, setActiveView] = useState('preview');
     const [isFullscreen, setIsFullscreen] = useState(false);
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        // Detectar si es móvil
+        const checkMobile = () => {
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                                   window.innerWidth < 768;
+            setIsMobile(isMobileDevice);
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     useEffect(() => {
         if (isOpen && orderId) {
             loadFile();
@@ -18,6 +33,13 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
         try {
             setLoading(true);
             setError(null);
+            
+            // Para móvil con PDFs, usar estrategia diferente
+            if (isMobile && fileType === 'pdf') {
+                // No cargar blob, solo preparar para redirect/download
+                setFileUrl('mobile-pdf-placeholder');
+                return;
+            }
             
             const response = await fetch(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt`, {
                 headers: {
@@ -41,6 +63,13 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
 
     const downloadFile = async () => {
         try {
+            // Para móvil, hacer redirect directo al endpoint
+            if (isMobile) {
+                window.open(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/download-receipt?token=${localStorage.getItem('token')}`, '_blank');
+                return;
+            }
+
+            // Para desktop, método normal
             const response = await fetch(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/download-receipt`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -59,6 +88,11 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
         } catch (err) {
             alert('Error al descargar: ' + err.message);
         }
+    };
+
+    const openInBrowser = () => {
+        // Redirect directo al endpoint con token en query
+        window.open(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt?token=${localStorage.getItem('token')}`, '_blank');
     };
 
     const cleanup = () => {
@@ -229,11 +263,46 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                                     <div className="h-full">
                                         <div className="h-full bg-white rounded-2xl shadow-inner border border-gray-200/50 overflow-hidden">
                                             {fileType === 'pdf' ? (
-                                                <iframe
-                                                    src={`${fileUrl}#toolbar=1&navpanes=1&scrollbar=1&view=Fit`}
-                                                    className="w-full h-full"
-                                                    title="Comprobante PDF"
-                                                />
+                                                <div className="w-full h-full">
+                                                    {/* Mobile PDF handler */}
+                                                    {isMobile ? (
+                                                        <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                                                            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                                                                <DocumentTextIcon className="w-12 h-12 text-red-600" />
+                                                            </div>
+                                                            <h3 className="text-xl font-bold text-gray-900 mb-3">Documento PDF</h3>
+                                                            <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+                                                                Para una mejor experiencia en móvil, abre el PDF en tu navegador o descárgalo.
+                                                            </p>
+                                                            <div className="space-y-3 w-full max-w-xs">
+                                                                <button
+                                                                    onClick={openInBrowser}
+                                                                    className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white p-4 rounded-xl font-medium shadow-lg"
+                                                                >
+                                                                    <EyeIcon className="w-5 h-5" />
+                                                                    Abrir PDF
+                                                                </button>
+                                                                <button
+                                                                    onClick={downloadFile}
+                                                                    className="w-full flex items-center justify-center gap-3 bg-red-600 text-white p-4 rounded-xl font-medium shadow-lg"
+                                                                >
+                                                                    <ArrowDownTrayIcon className="w-5 h-5" />
+                                                                    Descargar PDF
+                                                                </button>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 mt-4">
+                                                                💡 El PDF se abrirá en una nueva pestaña
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        /* Desktop PDF viewer */
+                                                        <iframe
+                                                            src={`${fileUrl}#toolbar=1&navpanes=1&scrollbar=1&view=Fit`}
+                                                            className="w-full h-full"
+                                                            title="Comprobante PDF"
+                                                        />
+                                                    )}
+                                                </div>
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center p-4 sm:p-8">
                                                     <img
