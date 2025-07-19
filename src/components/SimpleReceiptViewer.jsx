@@ -50,6 +50,15 @@ const SimpleReceiptViewer = ({ isOpen, onClose, orderId, fileType, order }) => {
 
     const downloadFile = async () => {
         try {
+            // Para móvil, usar redirect directo que funciona mejor
+            if (isMobile) {
+                // Abrir en nueva pestaña para descarga/visualización
+                const token = localStorage.getItem('token');
+                window.open(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt?token=${token}`, '_blank');
+                return;
+            }
+
+            // Para desktop, método blob normal
             const response = await fetch(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
