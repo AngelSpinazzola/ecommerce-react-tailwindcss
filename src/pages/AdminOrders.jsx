@@ -3,10 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { orderService } from '../services/orderService';
 import NavBar from '../components/Common/NavBar';
-
-
-import UltraModernReceiptViewer from '../components/UltraModernReceiptViewer';
-
+import SimpleReceiptViewer from '../components/SimpleReceiptViewer';
 import FileViewer from '../components/FileViewer';
 
 const AdminOrders = () => {
@@ -646,7 +643,7 @@ const AdminOrders = () => {
                     </Link>
                 </div>
             </main>
-            <UltraModernReceiptViewer
+            <SimpleReceiptViewer
                 isOpen={fileViewer.show}
                 orderId={fileViewer.orderId}
                 fileType={fileViewer.fileType}
