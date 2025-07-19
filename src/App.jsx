@@ -17,13 +17,35 @@ import ProductManagement from './pages/ProductManagement';
 import ProtectedRoute from './components/Common/ProtectedRoute.jsx';
 import AdminOrders from './pages/AdminOrders';
 import AdminOrderDetail from './pages/AdminOrderDetail';
+import AdminPendingOrders from './pages/AdminPendingOrders'; // Nueva página
 import Invoice from './components/Invoice';
 // import './App.css';
 
 function App() {
   return (
     <>
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            theme: {
+              primary: '#10B981',
+            },
+          },
+          error: {
+            duration: 5000,
+            theme: {
+              primary: '#EF4444',
+            },
+          },
+        }}
+      />
       <AuthProvider>
         <CartProvider>
           <Router>
@@ -39,40 +61,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/invoice/:orderId" element={<Invoice />} />
 
-
-                {/* Rutas protegidas */}
-                <Route
-                  path="/admin/dashboard"
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/products"  // ← GESTIÓN de productos (admin)
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <ProductManagement />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/orders"
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <AdminOrders />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/order/:orderId"
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <AdminOrderDetail />
-                    </ProtectedRoute>
-                  }
-                />
+                {/* Rutas de usuarios autenticados */}
                 <Route
                   path="/my-orders"
                   element={
@@ -90,7 +79,101 @@ function App() {
                   }
                 />
 
-                {/* Redirecciones - solo para rutas que no existen */}
+                {/* Rutas de administración */}
+                <Route
+                  path="/admin/dashboard"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Gestión de productos */}
+                <Route
+                  path="/admin/products"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <ProductManagement />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Gestión de órdenes y pagos */}
+                <Route
+                  path="/admin/orders"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminOrders />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Nueva ruta: Revisión de pagos pendientes */}
+                <Route
+                  path="/admin/orders/pending-review"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminPendingOrders />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Detalle de orden específica */}
+                <Route
+                  path="/admin/order/:orderId"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminOrderDetail />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Rutas adicionales para gestión de pagos */}
+                
+                {/* Filtros por estado de órdenes - usando query params */}
+                <Route
+                  path="/admin/orders/pending-payment"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminOrders />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="/admin/orders/payment-approved"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminOrders />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="/admin/orders/shipped"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminOrders />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Rutas de categorías de productos (públicas) */}
+                <Route path="/category/gaming" element={<Home />} />
+                <Route path="/category/hardware" element={<Home />} />
+                <Route path="/category/perifericos" element={<Home />} />
+                <Route path="/category/streaming" element={<Home />} />
+                <Route path="/ofertas" element={<Home />} />
+
+                {/* Redirecciones legacy */}
+                <Route path="/customer/dashboard" element={<Navigate to="/" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/" replace />} />
+
+                {/* Wishlist (placeholder para futuro) */}
+                <Route path="/wishlist" element={<Navigate to="/" replace />} />
+
+                {/* Ruta 404 - debe ir al final */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </div>

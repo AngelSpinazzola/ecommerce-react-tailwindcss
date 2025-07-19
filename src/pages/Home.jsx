@@ -10,7 +10,6 @@ import EmptyStates from '../components/Home/EmptyStates';
 import toast from 'react-hot-toast';
 
 const Home = () => {
-    // State management
     const [products, setProducts] = useState([]);
     const [allProducts, setAllProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -24,12 +23,10 @@ const Home = () => {
 
     const { isAuthenticated, user } = useAuth();
 
-    // Load initial data
     useEffect(() => {
         loadData();
     }, []);
 
-    // Filter products when parameters change
     useEffect(() => {
         filterProducts();
     }, [allProducts, searchTerm, selectedCategory, priceRange, sortBy]);
@@ -59,7 +56,6 @@ const Home = () => {
     const filterProducts = () => {
         let filtered = [...allProducts];
 
-        // Search filter
         if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase();
             filtered = filtered.filter(product =>
@@ -69,12 +65,9 @@ const Home = () => {
             );
         }
 
-        // Category filter
         if (selectedCategory) {
             filtered = filtered.filter(product => product.category === selectedCategory);
         }
-
-        // Price filter
         if (priceRange.min !== '') {
             filtered = filtered.filter(product => product.price >= parseFloat(priceRange.min));
         }
@@ -412,40 +405,6 @@ const Home = () => {
                     </div>
                 </div>
             </footer>
-
-            {/* Custom CSS for gaming effects */}
-            <style jsx>{`
-                @keyframes glow {
-                    0%, 100% { box-shadow: 0 0 5px rgba(34, 211, 238, 0.4); }
-                    50% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.8); }
-                }
-                
-                @keyframes fade-in-up {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                
-                .animate-fade-in-up {
-                    animation: fade-in-up 0.6s ease-out both;
-                }
-                
-                .line-clamp-2 {
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                }
-
-                .gaming-glow:hover {
-                    animation: glow 2s infinite;
-                }
-            `}</style>
         </div>
     );
 };

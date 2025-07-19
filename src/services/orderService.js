@@ -1,7 +1,6 @@
 import apiService from './api';
 
 class OrderService {
-  // Crea nueva orden
   async createOrder(orderData) {
     try {
       const response = await apiService.post('/order', orderData);
@@ -12,7 +11,6 @@ class OrderService {
     }
   }
 
-  // Obtiene orden por ID
   async getOrderById(id) {
     try {
       const response = await apiService.get(`/order/${id}`);
@@ -23,7 +21,6 @@ class OrderService {
     }
   }
 
-  // Obtiene mis órdenes (usuario logueado)
   async getMyOrders() {
     try {
       const response = await apiService.get('/order/my-orders');
@@ -34,7 +31,6 @@ class OrderService {
     }
   }
 
-  // Obtiene todas las órdenes (solo admin)
   async getAllOrders() {
     try {
       const response = await apiService.get('/order');
@@ -45,7 +41,6 @@ class OrderService {
     }
   }
 
-  // Obtiene órdenes por estado (solo admin)
   async getOrdersByStatus(status) {
     try {
       const response = await apiService.get(`/order/status/${status}`);
@@ -56,14 +51,11 @@ class OrderService {
     }
   }
 
-  // ===== NUEVOS MÉTODOS PARA SISTEMA DE PAGOS =====
-
-  // Subir comprobante de pago
   async uploadPaymentReceipt(orderId, file) {
     try {
       const formData = new FormData();
       formData.append('receiptFile', file);
-      
+
       const response = await apiService.post(`/order/${orderId}/payment-receipt`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -76,7 +68,6 @@ class OrderService {
     }
   }
 
-  // Obtener órdenes pendientes de revisión (admin)
   async getOrdersPendingReview() {
     try {
       const response = await apiService.get('/order/pending-review');
@@ -87,7 +78,6 @@ class OrderService {
     }
   }
 
-  // Aprobar pago (admin)
   async approvePayment(orderId, adminNotes = '') {
     try {
       const response = await apiService.put(`/order/${orderId}/approve-payment`, {
@@ -100,7 +90,6 @@ class OrderService {
     }
   }
 
-  // Rechazar pago (admin)
   async rejectPayment(orderId, adminNotes) {
     try {
       const response = await apiService.put(`/order/${orderId}/reject-payment`, {
@@ -113,7 +102,6 @@ class OrderService {
     }
   }
 
-  // Marcar como enviado (admin)
   async markAsShipped(orderId, trackingNumber, shippingProvider, adminNotes = '') {
     try {
       const response = await apiService.put(`/order/${orderId}/mark-shipped`, {
@@ -128,7 +116,6 @@ class OrderService {
     }
   }
 
-  // Marcar como entregado (admin)
   async markAsDelivered(orderId, adminNotes = '') {
     try {
       const response = await apiService.put(`/order/${orderId}/mark-delivered`, {
@@ -141,7 +128,7 @@ class OrderService {
     }
   }
 
-  // Obtener URL del comprobante de pago
+  // Obtiene URL del comprobante de pago
   async getPaymentReceipt(orderId) {
     try {
       const response = await apiService.get(`/order/${orderId}/payment-receipt`);
@@ -152,7 +139,6 @@ class OrderService {
     }
   }
 
-  // Actualizar estado de orden (admin)
   async updateOrderStatus(orderId, status, adminNotes = '') {
     try {
       const response = await apiService.put(`/order/${orderId}/status`, {
@@ -166,9 +152,6 @@ class OrderService {
     }
   }
 
-  // ===== MÉTODOS AUXILIARES ACTUALIZADOS =====
-
-  // Maneja errores
   handleError(error) {
     if (error.response?.data?.message) {
       return new Error(error.response.data.message);
@@ -176,7 +159,7 @@ class OrderService {
     return new Error('Error de conexión. Intenta nuevamente.');
   }
 
-  // Formatear datos de orden para el API
+  // Formatea datos de orden para el API
   formatOrderData(cartItems, customerData) {
     return {
       customerName: customerData.name,
@@ -267,9 +250,6 @@ class OrderService {
     return price.toFixed(2);
   }
 
-  // ===== NUEVOS MÉTODOS PARA ESTADOS DE PAGO =====
-
-  // Obtiene color del estado para UI
   getStatusColor(status) {
     const colors = {
       'pending_payment': 'text-yellow-600 bg-yellow-50',
@@ -279,14 +259,12 @@ class OrderService {
       'shipped': 'text-purple-600 bg-purple-50',
       'delivered': 'text-green-700 bg-green-100',
       'cancelled': 'text-red-600 bg-red-50',
-      // Estados legacy
       'pending': 'text-yellow-600 bg-yellow-50',
       'completed': 'text-green-600 bg-green-50'
     };
     return colors[status] || 'text-gray-600 bg-gray-50';
   }
 
-  // Obtiene texto amigable del estado
   getStatusText(status) {
     const texts = {
       'pending_payment': 'Esperando comprobante',
@@ -296,14 +274,12 @@ class OrderService {
       'shipped': 'Enviado',
       'delivered': 'Entregado',
       'cancelled': 'Cancelado',
-      // Estados legacy
       'pending': 'Pendiente',
       'completed': 'Completada'
     };
     return texts[status] || status;
   }
 
-  // Obtiene descripción detallada del estado
   getStatusDescription(status) {
     const descriptions = {
       'pending_payment': 'Adjunta tu comprobante de pago para continuar',
@@ -317,14 +293,44 @@ class OrderService {
     return descriptions[status] || '';
   }
 
-  // Verifica si el estado permite subir comprobante
   canUploadReceipt(status) {
     return status === 'pending_payment' || status === 'payment_rejected';
   }
 
-  // Verifica si el estado permite acciones de admin
   canAdminModify(status) {
     return ['payment_submitted', 'payment_approved', 'shipped'].includes(status);
+  }
+
+  async downloadReceipt(orderId) {
+    try {
+        const response = await apiService.get(`/order/${orderId}/download-receipt`, {
+            responseType: 'blob' // ← Importante para archivos
+        });
+
+        // Crear descarga automática
+        const blob = new Blob([response.data]);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `comprobante_orden_${orderId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        return true;
+    } catch (error) {
+        console.error('Error downloading receipt:', error);
+        throw error;
+    }
+  }
+
+  async getReceiptViewUrl(orderId) {
+    try {
+        // Para "ver en nueva pestaña", generamos una URL temporal
+        const token = localStorage.getItem('token');
+        return `${apiService.defaults.baseURL}/order/${orderId}/download-receipt?token=${token}`;
+    } catch (error) {
+        throw error;
+    }
   }
 }
 
