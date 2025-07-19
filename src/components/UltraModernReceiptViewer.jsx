@@ -14,10 +14,10 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
         // Detectar si es móvil
         const checkMobile = () => {
             const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                                   window.innerWidth < 768;
+                window.innerWidth < 768;
             setIsMobile(isMobileDevice);
         };
-        
+
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
@@ -33,14 +33,14 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
         try {
             setLoading(true);
             setError(null);
-            
+
             // Para móvil con PDFs, usar estrategia diferente
             if (isMobile && fileType === 'pdf') {
                 // No cargar blob, solo preparar para redirect/download
                 setFileUrl('mobile-pdf-placeholder');
                 return;
             }
-            
+
             const response = await fetch(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -91,8 +91,26 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
     };
 
     const openInBrowser = () => {
-        // Redirect directo al endpoint con token en query
-        window.open(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt?token=${localStorage.getItem('token')}`, '_blank');
+        // Crear un formulario temporal para enviar con headers
+        const token = localStorage.getItem('token');
+        const url = `https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt`;
+
+        // Crear ventana con fetch y blob para móvil
+        fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                window.open(blobUrl, '_blank');
+                // Limpiar después de un tiempo
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+            })
+            .catch(err => {
+                alert('Error al abrir archivo: ' + err.message);
+            });
     };
 
     const cleanup = () => {
@@ -112,22 +130,22 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
         <>
             {/* Backdrop con blur premium */}
             <div className="fixed inset-0 bg-black/50 backdrop-blur-xl z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6">
-                
+
                 {/* Main Container - Responsive sizes */}
                 <div className={`
                     relative bg-white rounded-3xl shadow-2xl ring-1 ring-black/5 
                     w-full max-w-7xl transition-all duration-300 ease-out
-                    ${isFullscreen 
-                        ? 'h-[98vh] max-h-none' 
+                    ${isFullscreen
+                        ? 'h-[98vh] max-h-none'
                         : 'h-[95vh] max-h-[900px]'
                     }
                     flex flex-col overflow-hidden
                 `}>
-                    
+
                     {/* Header Glass Effect */}
                     <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
                         <div className="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
-                        
+
                         <div className="relative p-4 sm:p-6">
                             {/* Top row - Title and controls */}
                             <div className="flex items-start justify-between mb-4">
@@ -139,7 +157,7 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                                         Orden #{orderId} • {order?.customerName}
                                     </p>
                                 </div>
-                                
+
                                 {/* Controls */}
                                 <div className="flex items-center gap-2 ml-4">
                                     <button
@@ -155,7 +173,7 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                                             )}
                                         </svg>
                                     </button>
-                                    
+
                                     <button
                                         onClick={cleanup}
                                         className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-200"
@@ -178,7 +196,7 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                                             {fileType === 'pdf' ? 'Documento PDF' : 'Imagen'}
                                         </span>
                                     </div>
-                                    
+
                                     <div className="bg-emerald-400/20 text-emerald-100 rounded-xl px-3 py-2">
                                         <span className="text-sm font-medium">${order?.total?.toFixed(2)}</span>
                                     </div>
@@ -200,11 +218,10 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                             <div className="flex bg-white/10 rounded-2xl p-1 mt-4">
                                 <button
                                     onClick={() => setActiveView('preview')}
-                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                                        activeView === 'preview'
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeView === 'preview'
                                             ? 'bg-white text-indigo-600 shadow-lg'
                                             : 'text-white/80 hover:text-white hover:bg-white/10'
-                                    }`}
+                                        }`}
                                 >
                                     <EyeIcon className="w-4 h-4" />
                                     <span className="hidden sm:inline">Vista Previa</span>
@@ -212,11 +229,10 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                                 </button>
                                 <button
                                     onClick={() => setActiveView('details')}
-                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                                        activeView === 'details'
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeView === 'details'
                                             ? 'bg-white text-indigo-600 shadow-lg'
                                             : 'text-white/80 hover:text-white hover:bg-white/10'
-                                    }`}
+                                        }`}
                                 >
                                     <DocumentTextIcon className="w-4 h-4" />
                                     <span className="hidden sm:inline">Detalles</span>
@@ -321,7 +337,7 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                         {activeView === 'details' && (
                             <div className="h-full overflow-y-auto p-3 sm:p-6">
                                 <div className="max-w-4xl mx-auto">
-                                    
+
                                     {/* Quick stats */}
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                                         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
@@ -399,7 +415,7 @@ const UltraModernReceiptViewer = ({ isOpen, onClose, orderId, fileType, order })
                                                 <div>
                                                     <label className="text-sm font-medium text-gray-500">Comprobante subido</label>
                                                     <p className="text-gray-900 text-sm">
-                                                        {order?.paymentReceiptUploadedAt 
+                                                        {order?.paymentReceiptUploadedAt
                                                             ? new Date(order.paymentReceiptUploadedAt).toLocaleString('es-ES', {
                                                                 year: 'numeric',
                                                                 month: 'long',
