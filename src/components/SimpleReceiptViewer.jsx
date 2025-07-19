@@ -50,11 +50,37 @@ const SimpleReceiptViewer = ({ isOpen, onClose, orderId, fileType, order }) => {
 
     const downloadFile = async () => {
         try {
-            // Para móvil, usar redirect directo que funciona mejor
+            // Para móvil, crear un enlace temporal que funcione
             if (isMobile) {
-                // Abrir en nueva pestaña para descarga/visualización
-                const token = localStorage.getItem('token');
-                window.open(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt?token=${token}`, '_blank');
+                // Fetch normal con headers de autorización
+                const response = await fetch(`https://ecommerce-api-production-50fd.up.railway.app/api/order/${orderId}/view-receipt`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    
+                    // En móvil, abrir en nueva pestaña
+                    const newWindow = window.open(url, '_blank');
+                    
+                    // Si no se abre popup, intentar descarga directa
+                    if (!newWindow) {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `comprobante_orden_${orderId}.${fileType === 'pdf' ? 'pdf' : 'jpg'}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                    
+                    // Limpiar después de un tiempo
+                    setTimeout(() => URL.revokeObjectURL(url), 10000);
+                } else {
+                    alert('Error al descargar el archivo');
+                }
                 return;
             }
 
