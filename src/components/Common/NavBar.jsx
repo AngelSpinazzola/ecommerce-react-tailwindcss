@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
-const NavBar = () => {
+const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
     const { getCartItemsCount } = useCart();
     const navigate = useNavigate();
@@ -24,17 +25,28 @@ const NavBar = () => {
     const CartButton = () => (
         <Link
             to="/cart"
-            className="relative p-2 text-gray-300 hover:text-cyan-400 transition-colors"
+            className="relative p-2 text-gray-300 hover:text-amber-400 transition-colors"
         >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
             {getCartItemsCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-cyan-500 text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {getCartItemsCount()}
                 </span>
             )}
         </Link>
+    );
+
+    const SearchButton = () => (
+        <button
+            onClick={() => setShowMobileSearch(!showMobileSearch)}
+            className="p-2 text-gray-300 hover:text-amber-400 transition-colors"
+        >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </button>
     );
 
     const UserDropdown = () => (
@@ -43,7 +55,7 @@ const NavBar = () => {
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
             >
-                <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 text-black rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full flex items-center justify-center">
                     <span className="text-sm font-bold">
                         {user?.firstName?.charAt(0) || 'U'}
                     </span>
@@ -66,7 +78,7 @@ const NavBar = () => {
                         <p className="text-xs text-gray-300">{user?.email}</p>
                         {user?.role === 'Admin' && (
                             <div className="mt-2">
-                                <span className="inline-block px-2 py-1 text-xs bg-cyan-500 text-black rounded-full font-bold">
+                                <span className="inline-block px-2 py-1 text-xs bg-amber-500 text-white rounded-full font-bold">
                                     Administrador
                                 </span>
                             </div>
@@ -75,7 +87,7 @@ const NavBar = () => {
                     <div className="py-2">
                         <Link
                             to="/my-orders"
-                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition-colors"
+                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-amber-400 transition-colors"
                             onClick={() => setShowDropdown(false)}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +97,7 @@ const NavBar = () => {
                         </Link>
                         <Link
                             to="/my-profile"
-                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition-colors"
+                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-amber-400 transition-colors"
                             onClick={() => setShowDropdown(false)}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +107,7 @@ const NavBar = () => {
                         </Link>
                         <Link
                             to="/wishlist"
-                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition-colors"
+                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-amber-400 transition-colors"
                             onClick={() => setShowDropdown(false)}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,78 +146,52 @@ const NavBar = () => {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
 
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 text-black rounded-lg flex items-center justify-center">
-                                <span className="text-lg font-bold">GT</span>
+                        {/* Logo Moderno */}
+                        <Link to="/" className="flex items-center space-x-3 flex-shrink-0">
+                            <div className="relative">
+                                {/* Logo con diseño gaming */}
+                                <div className="w-10 h-10 bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                                    <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
+                                        <span className="text-amber-400 font-black text-sm">G</span>
+                                    </div>
+                                </div>
+                                {/* Pequeño indicador gaming */}
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                             </div>
-                            <div className="text-white">
-                                <span className="text-xl font-bold">Game</span>
-                                <span className="text-cyan-400 italic ml-1">Tech</span>
+                            <div className="text-white hidden sm:block">
+                                <span className="text-xl font-black tracking-tight">GAMETECH</span>
+                                <div className="text-xs text-amber-400 font-medium -mt-1">GAMING STORE</div>
                             </div>
                         </Link>
 
+                        {/* Search Bar Desktop */}
+                        {showSearch && (
+                            <div className="flex-1 max-w-md mx-4 hidden sm:block">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar productos"
+                                        value={searchTerm || ''}
+                                        onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
+                                        className="w-full px-4 py-2 pl-10 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                                    />
+                                    <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center space-x-8">
-                            {/* Category navigation */}
-                            <nav className="flex items-center space-x-6">
-                                <Link
-                                    to="/category/gaming"
-                                    className="text-gray-300 hover:text-cyan-400 transition-colors font-medium flex items-center space-x-1"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 01-1-1h1a2 2 0 100-4H5a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                                    </svg>
-                                    <span>Gaming</span>
-                                </Link>
-                                <Link
-                                    to="/category/hardware"
-                                    className="text-gray-300 hover:text-cyan-400 transition-colors font-medium flex items-center space-x-1"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                                    </svg>
-                                    <span>Hardware</span>
-                                </Link>
-                                <Link
-                                    to="/category/perifericos"
-                                    className="text-gray-300 hover:text-cyan-400 transition-colors font-medium flex items-center space-x-1"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>Periféricos</span>
-                                </Link>
-                                <Link
-                                    to="/category/streaming"
-                                    className="text-gray-300 hover:text-cyan-400 transition-colors font-medium flex items-center space-x-1"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>Streaming</span>
-                                </Link>
-                                <Link
-                                    to="/ofertas"
-                                    className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium flex items-center space-x-1"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span>Ofertas</span>
-                                </Link>
-                            </nav>
-
-                            {/* Actions */}
+                            {/* Actions directas sin categorías */}
                             <div className="flex items-center space-x-4">
-                                {/* CARRITO SIEMPRE VISIBLE PARA TODOS (excepto admins) */}
                                 {user?.role !== 'Admin' && <CartButton />}
-                                
-                                {/* Wishlist solo para usuarios logueados */}
+
                                 {isAuthenticated && user?.role !== 'Admin' && (
                                     <Link
                                         to="/wishlist"
-                                        className="p-2 text-gray-300 hover:text-cyan-400 transition-colors"
+                                        className="p-2 text-gray-300 hover:text-amber-400 transition-colors"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -219,7 +205,7 @@ const NavBar = () => {
                                             <div className="flex items-center space-x-4">
                                                 <Link
                                                     to="/admin/dashboard"
-                                                    className="bg-gradient-to-r from-cyan-500 to-blue-500 text-black px-4 py-2 rounded-lg text-sm font-bold hover:from-cyan-400 hover:to-blue-400 transition-all duration-200"
+                                                    className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:from-amber-400 hover:to-orange-500 transition-all duration-200"
                                                 >
                                                     Dashboard
                                                 </Link>
@@ -244,7 +230,7 @@ const NavBar = () => {
                                         </Link>
                                         <Link
                                             to="/register"
-                                            className="bg-gradient-to-r from-cyan-500 to-blue-500 text-black px-6 py-2 rounded-lg text-sm font-bold hover:from-cyan-400 hover:to-blue-400 transition-all duration-200 transform hover:scale-105"
+                                            className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:from-amber-400 hover:to-orange-500 transition-all duration-200 transform hover:scale-105"
                                         >
                                             Registrarse
                                         </Link>
@@ -253,11 +239,15 @@ const NavBar = () => {
                             </div>
                         </div>
 
-                        {/* Mobile Menu Button */}
+                        {/* Mobile Actions */}
                         <div className="md:hidden flex items-center space-x-2">
-                            {/* CARRITO MÓVIL SIEMPRE VISIBLE (excepto admins) */}
-                            {user?.role !== 'Admin' && <CartButton />}
+                            {/* Search Icon Mobile */}
+                            {showSearch && <SearchButton />}
                             
+                            {/* Cart Mobile */}
+                            {user?.role !== 'Admin' && <CartButton />}
+
+                            {/* Menu Button */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="p-2 text-gray-300 hover:text-white transition-colors"
@@ -270,6 +260,33 @@ const NavBar = () => {
                     </div>
                 </div>
 
+                {/* Mobile Search Bar (cuando se presiona la lupa) */}
+                {showMobileSearch && showSearch && (
+                    <div className="md:hidden bg-gray-800 border-t border-gray-700 p-4">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Buscar productos gaming..."
+                                value={searchTerm || ''}
+                                onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
+                                className="w-full px-4 py-3 pl-10 bg-gray-900 border border-gray-600 text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                                autoFocus
+                            />
+                            <svg className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <button
+                                onClick={() => setShowMobileSearch(false)}
+                                className="absolute right-3 top-3.5 text-gray-400 hover:text-white"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6m0 0L6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden bg-gray-900 border-t border-gray-700 shadow-lg relative z-50">
@@ -277,18 +294,18 @@ const NavBar = () => {
 
                             {/* Categories */}
                             <div className="space-y-2">
-                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Categorías</p>
+                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Categorías Gaming</p>
                                 <div className="grid grid-cols-2 gap-2">
                                     {[
                                         { name: 'Gaming', path: '/category/gaming', icon: '🎮' },
                                         { name: 'Hardware', path: '/category/hardware', icon: '💻' },
                                         { name: 'Periféricos', path: '/category/perifericos', icon: '⌨️' },
-                                        { name: 'Streaming', path: '/category/streaming', icon: '📹' }
+                                        { name: 'Ofertas', path: '/ofertas', icon: '🔥' }
                                     ].map((category) => (
                                         <Link
                                             key={category.name}
                                             to={category.path}
-                                            className="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-cyan-400 p-3 rounded-xl text-center font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+                                            className="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-amber-400 p-3 rounded-xl text-center font-medium transition-all duration-200 flex items-center justify-center space-x-2"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <span>{category.icon}</span>
@@ -301,7 +318,7 @@ const NavBar = () => {
                             {isAuthenticated ? (
                                 <>
                                     <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl">
-                                        <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 text-black rounded-full flex items-center justify-center">
+                                        <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full flex items-center justify-center">
                                             <span className="text-sm font-bold">
                                                 {user?.firstName?.charAt(0) || 'U'}
                                             </span>
@@ -310,7 +327,7 @@ const NavBar = () => {
                                             <p className="font-medium text-white">{user?.firstName} {user?.lastName}</p>
                                             <p className="text-sm text-gray-300">{user?.email}</p>
                                             {user?.role === 'Admin' && (
-                                                <span className="inline-block mt-1 px-2 py-1 text-xs bg-cyan-500 text-black rounded-full font-bold">
+                                                <span className="inline-block mt-1 px-2 py-1 text-xs bg-amber-500 text-white rounded-full font-bold">
                                                     Admin
                                                 </span>
                                             )}
@@ -320,17 +337,16 @@ const NavBar = () => {
                                     {user?.role === 'Admin' ? (
                                         <Link
                                             to="/admin/dashboard"
-                                            className="block bg-gradient-to-r from-cyan-500 to-blue-500 text-black p-3 rounded-xl text-center font-bold hover:from-cyan-400 hover:to-blue-400 transition-all duration-200"
+                                            className="block bg-gradient-to-r from-amber-500 to-orange-600 text-white p-3 rounded-xl text-center font-bold hover:from-amber-400 hover:to-orange-500 transition-all duration-200"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             Dashboard
                                         </Link>
                                     ) : (
                                         <div className="space-y-2">
-                                            {/* CARRITO EN MENÚ MÓVIL PARA USUARIOS NO ADMIN */}
                                             <Link
                                                 to="/cart"
-                                                className="flex items-center space-x-3 p-3 text-gray-300 hover:text-cyan-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
+                                                className="flex items-center space-x-3 p-3 text-gray-300 hover:text-amber-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 <div className="relative">
@@ -338,26 +354,16 @@ const NavBar = () => {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                                     </svg>
                                                     {getCartItemsCount() > 0 && (
-                                                        <span className="absolute -top-1 -right-1 bg-cyan-500 text-black text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                                                        <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
                                                             {getCartItemsCount()}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span>Carrito</span>
-                                            </Link>
-                                            <Link
-                                                to="/wishlist"
-                                                className="flex items-center space-x-3 p-3 text-gray-300 hover:text-cyan-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                                </svg>
-                                                <span>Lista de Deseos</span>
+                                                <span>Mi Carrito</span>
                                             </Link>
                                             <Link
                                                 to="/my-orders"
-                                                className="flex items-center space-x-3 p-3 text-gray-300 hover:text-cyan-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
+                                                className="flex items-center space-x-3 p-3 text-gray-300 hover:text-amber-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -367,7 +373,7 @@ const NavBar = () => {
                                             </Link>
                                             <Link
                                                 to="/my-profile"
-                                                className="flex items-center space-x-3 p-3 text-gray-300 hover:text-cyan-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
+                                                className="flex items-center space-x-3 p-3 text-gray-300 hover:text-amber-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -393,11 +399,10 @@ const NavBar = () => {
                                 </>
                             ) : (
                                 <>
-                                    {/* CARRITO PARA USUARIOS NO LOGUEADOS EN MÓVIL */}
                                     <div className="space-y-2">
                                         <Link
                                             to="/cart"
-                                            className="flex items-center space-x-3 p-3 text-gray-300 hover:text-cyan-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
+                                            className="flex items-center space-x-3 p-3 text-gray-300 hover:text-amber-400 hover:bg-gray-800 rounded-xl transition-all duration-200"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <div className="relative">
@@ -405,7 +410,7 @@ const NavBar = () => {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                                 </svg>
                                                 {getCartItemsCount() > 0 && (
-                                                    <span className="absolute -top-1 -right-1 bg-cyan-500 text-black text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                                                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
                                                         {getCartItemsCount()}
                                                     </span>
                                                 )}
@@ -417,14 +422,14 @@ const NavBar = () => {
                                     <div className="space-y-3">
                                         <button
                                             onClick={() => handleMobileNavigation('/login')}
-                                            className="block w-full p-3 text-gray-300 hover:text-cyan-400 hover:bg-gray-800 rounded-xl text-center font-medium transition-all duration-200 border border-gray-600"
+                                            className="block w-full p-3 text-gray-300 hover:text-amber-400 hover:bg-gray-800 rounded-xl text-center font-medium transition-all duration-200 border border-gray-600"
                                         >
                                             Iniciar Sesión
                                         </button>
-                                        
+
                                         <button
                                             onClick={() => handleMobileNavigation('/register')}
-                                            className="block w-full p-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-black rounded-xl text-center font-bold hover:from-cyan-400 hover:to-blue-400 transition-all duration-200"
+                                            className="block w-full p-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl text-center font-bold hover:from-amber-400 hover:to-orange-500 transition-all duration-200"
                                         >
                                             Registrarse
                                         </button>
