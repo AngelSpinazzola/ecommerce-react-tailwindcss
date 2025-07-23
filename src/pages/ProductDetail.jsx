@@ -10,6 +10,8 @@ import toast from 'react-hot-toast';
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
+
+// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -246,8 +248,6 @@ const ProductDetail = () => {
                                         pagination={{ 
                                             clickable: true,
                                             dynamicBullets: true,
-                                            bulletClass: 'swiper-pagination-bullet !bg-purple-500',
-                                            bulletActiveClass: 'swiper-pagination-bullet-active !bg-purple-600'
                                         }}
                                         thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
                                         className="h-96 lg:h-[500px]"
@@ -439,7 +439,7 @@ const ProductDetail = () => {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .animation-delay-150 {
                     animation-delay: 150ms;
                 }
@@ -476,11 +476,13 @@ const ProductDetail = () => {
                     height: 8px !important;
                     margin: 0 4px !important;
                     opacity: 0.7 !important;
+                    background: #9333ea !important;
                 }
                 
                 .swiper-pagination-bullet-active {
                     opacity: 1 !important;
                     transform: scale(1.2);
+                    background: #7c3aed !important;
                 }
 
                 /* Hide default navigation on mobile */
