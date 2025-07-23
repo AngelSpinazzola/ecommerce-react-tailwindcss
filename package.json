@@ -5,9 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "vite --mode development",
+    "dev:railway": "VITE_API_BASE_URL=https://ecommerce-api-production-50fd.up.railway.app/api vite",
+    "test:api-local": "curl http://localhost:10000/api/health || echo '❌ API local no disponible en puerto 10000'",
+    "test:api-railway": "curl https://ecommerce-api-production-50fd.up.railway.app/api/health || echo '❌ API Railway no disponible'",
+    "test:both": "npm run test:api-local && npm run test:api-railway",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build:local": "vite build --mode development",
+    "preview": "vite preview",
+    "check-env": "echo \"Current API URL: $VITE_API_BASE_URL\""
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

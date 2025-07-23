@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { productService } from '../services/productService';
 import NavBar from '../components/Common/NavBar';
+import SecondaryNavBar from '../components/Common/SecondaryNavBar';
 import toast from 'react-hot-toast';
 
 const ProductDetail = () => {
@@ -78,12 +79,6 @@ const ProductDetail = () => {
                     displayOrder: img.displayOrder
                 });
             });
-
-            console.log('🔍 Raw product.images:', product.images);
-            console.log('🔍 product.mainImageUrl:', product.mainImageUrl);
-            console.log('🔍 validImages after filter:', validImages);
-            console.log('🔍 mainImage found:', mainImage);
-            console.log('🔍 otherImages found:', otherImages);
         }
 
         // Solo agrega MainImageUrl si NO está en images
@@ -105,8 +100,6 @@ const ProductDetail = () => {
                 displayOrder: 0
             });
         }
-
-        console.log('🖼️ Display images:', images);
 
         return images;
     };
@@ -134,179 +127,283 @@ const ProductDetail = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+                <NavBar />
+                <div className="max-w-7xl mx-auto bg-white shadow-xl pt-34">
+                    <div className="flex items-center justify-center h-96">
+                        <div className="relative">
+                            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-400 rounded-full animate-spin animation-delay-150"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     if (error || !product) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Producto no encontrado</h2>
-                    <p className="text-gray-600 mb-6">{error}</p>
-                    <Link
-                        to="/"
-                        className="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700"
-                    >
-                        Volver al inicio
-                    </Link>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+                <NavBar />
+                <div className="max-w-7xl mx-auto bg-white shadow-xl pt-34">
+                    <div className="flex items-center justify-center min-h-96 text-center px-4">
+                        <div className="space-y-6">
+                            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-purple-600 via-pink-600 to-cyan-600 rounded-full flex items-center justify-center">
+                                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 className="text-3xl font-black text-gray-900 mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
+                                    PRODUCTO NO ENCONTRADO
+                                </h2>
+                                <p className="text-gray-600 mb-6">{error}</p>
+                                <Link
+                                    to="/"
+                                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                >
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                    Volver al inicio
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
             <NavBar />
-            <div className="min-h-screen bg-gray-50 pt-24 md:pt-28 lg:pt-32">
 
-
-
-                {/* Breadcrumb */}
-                <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            {/* Contenedor principal */}
+            <div className="max-w-7xl mx-auto bg-white shadow-xl pt-34">
+                {/* Breadcrumb gaming */}
+                <nav className="px-4 sm:px-6 lg:px-8 py-6 border-b border-gray-100">
                     <div className="flex items-center space-x-2 text-sm">
-                        <Link to="/" className="text-indigo-600 hover:text-indigo-800">
+                        <Link to="/" className="flex items-center text-purple-600 hover:text-purple-800 font-medium transition-colors">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
                             Inicio
                         </Link>
-                        <span className="text-gray-400">/</span>
-                        <span className="text-gray-500 capitalize">{product.category}</span>
-                        <span className="text-gray-400">/</span>
-                        <span className="text-gray-900 font-medium">{product.name}</span>
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span className="text-gray-500 capitalize font-medium">{product.category}</span>
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span className="text-gray-900 font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">{product.name}</span>
                     </div>
                 </nav>
 
                 {/* Product Detail */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
+                <div className="px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 lg:items-start">
 
                         {/* Image Gallery */}
-                        <div className="flex flex-col">
-                            {/* Main Image */}
-                            <div className="relative w-full bg-gray-200 rounded-lg overflow-hidden mb-4">
-                                <img
-                                    src={productService.getImageUrl(displayImages[currentImageIndex]?.url)}
-                                    alt={product.name}
-                                    className="w-full h-96 object-contain bg-white rounded-lg shadow-sm"
-                                    onError={(e) => {
-                                        e.target.src = 'https://picsum.photos/600/600?random=' + product.id;
-                                    }}
-                                />
-
-                                {/* Navigation arrows - solo si hay más de 1 imagen */}
-                                {displayImages.length > 1 && (
+                        <div className="flex flex-col space-y-4">
+                            {/* Category Navigation */}
+                            <div className="flex flex-wrap items-center gap-2 text-sm">
+                                <Link
+                                    to="/?category="
+                                    className="text-purple-600 hover:text-purple-800 font-bold transition-colors hover:underline"
+                                >
+                                    Todos los productos
+                                </Link>
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                                <Link
+                                    to={`/?category=${encodeURIComponent(product.category)}`}
+                                    className="text-purple-600 hover:text-purple-800 font-bold transition-colors hover:underline capitalize"
+                                >
+                                    {product.category}
+                                </Link>
+                                {product.brand && (
                                     <>
-                                        <button
-                                            onClick={prevImage}
-                                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
+                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                        <Link
+                                            to={`/?category=${encodeURIComponent(product.category)}&brand=${encodeURIComponent(product.brand)}`}
+                                            className="text-purple-600 hover:text-purple-800 font-bold transition-colors hover:underline"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={nextImage}
-                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
+                                            {product.category} {product.brand}
+                                        </Link>
                                     </>
                                 )}
+                            </div>
 
-                                {/* Image counter */}
+                            {/* Main Image */}
+                            <div className="relative group">
+                                <div className="relative w-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden shadow-xl">
+                                    {/* Gradiente decorativo */}
+                                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600"></div>
+
+                                    <img
+                                        src={productService.getImageUrl(displayImages[currentImageIndex]?.url)}
+                                        alt={product.name}
+                                        className="w-full h-96 lg:h-[500px] object-contain bg-white p-8 transition-transform duration-300 group-hover:scale-105"
+                                        onError={(e) => {
+                                            e.target.src = 'https://picsum.photos/600/600?random=' + product.id;
+                                        }}
+                                    />
+
+                                    {/* Navigation arrows */}
+                                    {displayImages.length > 1 && (
+                                        <>
+                                            <button
+                                                onClick={prevImage}
+                                                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/40 transition-all duration-200 group/btn"
+                                            >
+                                                <svg className="w-6 h-6 group-hover/btn:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={nextImage}
+                                                className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/40 transition-all duration-200 group/btn"
+                                            >
+                                                <svg className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {/* Image counter */}
+                                    {displayImages.length > 1 && (
+                                        <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur text-white px-3 py-1 rounded-full text-sm font-medium">
+                                            {currentImageIndex + 1} / {displayImages.length}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Image Thumbnails */}
                                 {displayImages.length > 1 && (
-                                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                                        {currentImageIndex + 1} / {displayImages.length}
+                                    <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide mt-4">
+                                        {displayImages.map((image, index) => (
+                                            <button
+                                                key={image.id}
+                                                onClick={() => setCurrentImageIndex(index)}
+                                                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${currentImageIndex === index
+                                                        ? 'border-purple-500 shadow-lg transform scale-105'
+                                                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                                    }`}
+                                            >
+                                                <img
+                                                    src={productService.getImageUrl(image.url)}
+                                                    alt={`${product.name} ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.src = 'https://picsum.photos/80/80?random=' + (product.id + index);
+                                                    }}
+                                                />
+                                            </button>
+                                        ))}
                                     </div>
                                 )}
                             </div>
-
-                            {/* Image Thumbnails - solo si hay más de 1 imagen */}
-                            {displayImages.length > 1 && (
-                                <div className="flex space-x-2 overflow-x-auto pb-2">
-                                    {displayImages.map((image, index) => (
-                                        <button
-                                            key={image.id}
-                                            onClick={() => setCurrentImageIndex(index)}
-                                            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${currentImageIndex === index
-                                                ? 'border-indigo-600'
-                                                : 'border-gray-300 hover:border-gray-400'
-                                                }`}
-                                        >
-                                            <img
-                                                src={productService.getImageUrl(image.url)}
-                                                alt={`${product.name} ${index + 1}`}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    e.target.src = 'https://picsum.photos/80/80?random=' + (product.id + index);
-                                                }}
-                                            />
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
                         </div>
 
                         {/* Product info */}
-                        <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
-                            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
-                                {product.name}
-                            </h1>
+                        <div className="mt-12 lg:mt-0 space-y-8">
+                            {/* Header */}
+                            <div className="space-y-4">
 
-                            <div className="mt-3">
-                                <h2 className="sr-only">Información del producto</h2>
-                                <p className="text-3xl text-gray-900">${product.price.toFixed(2)}</p>
-                            </div>
 
-                            {/* Category */}
-                            <div className="mt-6">
-                                <h3 className="text-sm font-medium text-gray-900">Categoría</h3>
-                                <span className="mt-1 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 capitalize">
-                                    {product.category}
-                                </span>
+                                <h1 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight">
+                                    {product.name}
+                                </h1>
+
+                                <div className="flex items-baseline space-x-4">
+                                    <span className="text-3xl lg:text-4xl bg-clip-text">
+                                        ${product.price.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    </span>
+                                    {product.originalPrice && product.originalPrice > product.price && (
+                                        <span className="text-lg text-gray-500 line-through">
+                                            ${product.originalPrice.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Description */}
-                            <div className="mt-6">
-                                <h3 className="text-sm font-medium text-gray-900">Descripción</h3>
-                                <div className="mt-4 text-base text-gray-700">
-                                    <p>{product.description || 'Sin descripción disponible.'}</p>
-                                </div>
+                            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
+                                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center">
+                                    <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Descripción del producto
+                                </h3>
+                                <p className="text-gray-700 leading-relaxed">
+                                    {product.description || 'Producto de alta calidad con especificaciones técnicas avanzadas. Diseñado para ofrecer el máximo rendimiento y durabilidad en aplicaciones exigentes.'}
+                                </p>
                             </div>
 
-                            {/* Stock */}
-                            <div className="mt-6">
-                                <div className="flex items-center">
-                                    <h3 className="text-sm font-medium text-gray-900">Disponibilidad:</h3>
-                                    <span className={`ml-2 text-sm ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        {product.stock > 0 ? `${product.stock} unidades en stock` : 'Sin stock'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Mensaje para admins */}
-                            {user?.role === 'Admin' && (
-                                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                                    <div className="flex">
-                                        <svg className="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                            {/* Specs */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
                                         <div>
-                                            <h3 className="text-sm font-medium text-blue-800">Modo Administrador</h3>
-                                            <p className="text-sm text-blue-700">
-                                                Estás viendo este producto como administrador. Solo los clientes pueden agregar productos al carrito.
+                                            <p className="text-sm font-medium text-gray-500">Disponibilidad</p>
+                                            <p className={`font-bold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {product.stock > 0 ? `${product.stock} unidades` : 'Agotado'}
                                             </p>
-                                            <div className="mt-2">
-                                                <Link
-                                                    to="/admin/products"
-                                                    className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                                                >
-                                                    Gestionar productos →
-                                                </Link>
-                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Garantía</p>
+                                            <p className="font-bold text-blue-600">12 meses</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Admin Notice */}
+                            {user?.role === 'Admin' && (
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+                                    <div className="flex items-start space-x-4">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-bold text-blue-900 mb-2">Modo Administrador</h3>
+                                            <p className="text-blue-800 mb-4">
+                                                Estás viendo este producto como administrador. Los clientes pueden agregar productos al carrito desde esta vista.
+                                            </p>
+                                            <Link
+                                                to="/admin/products"
+                                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                            >
+                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                Gestionar productos
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>
@@ -314,50 +411,83 @@ const ProductDetail = () => {
 
                             {/* Add to cart - Solo para clientes */}
                             {product.stock > 0 && user?.role !== 'Admin' && (
-                                <form className="mt-10" onSubmit={(e) => { e.preventDefault(); handleAddToCart(); }}>
-                                    <div className="flex items-center space-x-4">
-                                        <div>
-                                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-900">
-                                                Cantidad
-                                            </label>
-                                            <select
-                                                id="quantity"
-                                                value={quantity}
-                                                onChange={(e) => setQuantity(parseInt(e.target.value))}
-                                                className="mt-1 block w-20 rounded-md border border-gray-300 py-2 px-3 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                                            >
-                                                {[...Array(Math.min(product.stock, 10))].map((_, i) => (
-                                                    <option key={i + 1} value={i + 1}>
-                                                        {i + 1}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
+                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6">
+                                    <form onSubmit={(e) => { e.preventDefault(); handleAddToCart(); }} className="space-y-6">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="flex-shrink-0">
+                                                <label htmlFor="quantity" className="block text-sm font-bold text-gray-900 mb-2">
+                                                    Cantidad
+                                                </label>
+                                                <select
+                                                    id="quantity"
+                                                    value={quantity}
+                                                    onChange={(e) => setQuantity(parseInt(e.target.value))}
+                                                    className="block w-20 rounded-xl border border-gray-300 py-3 px-4 text-center font-bold focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all"
+                                                >
+                                                    {[...Array(Math.min(product.stock, 10))].map((_, i) => (
+                                                        <option key={i + 1} value={i + 1}>
+                                                            {i + 1}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
 
-                                        <button
-                                            type="submit"
-                                            className="flex-1 bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >
-                                            Agregar al carrito
-                                        </button>
-                                    </div>
-                                </form>
+                                            <div className="flex-1">
+                                                <button
+                                                    type="submit"
+                                                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-8 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 focus:scale-95 transition-all duration-200 flex items-center justify-center space-x-3 group"
+                                                >
+                                                    <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293a1 1 0 001.414 1.414L10 13m0 0v6a2 2 0 002 2h2a2 2 0 002-2v-6m0 0V9a2 2 0 00-2-2H10a2 2 0 00-2 2v4.01" />
+                                                    </svg>
+                                                    <span>Agregar al carrito</span>
+                                                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                                                        <span className="text-sm font-black">{quantity}</span>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
                             )}
 
                             {/* Back to products */}
-                            <div className="mt-8">
+                            <div className="flex items-center justify-between pt-8 border-t border-gray-200">
                                 <Link
                                     to="/"
-                                    className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                                    className="inline-flex items-center text-purple-600 hover:text-purple-800 font-bold transition-colors group"
                                 >
-                                    ← Volver a productos
+                                    <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                    Volver a productos
                                 </Link>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </>
+
+            <style jsx>{`
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+                
+                .animation-delay-150 {
+                    animation-delay: 150ms;
+                }
+                
+                @keyframes spin {
+                    to {
+                        transform: rotate(360deg);
+                    }
+                }
+            `}</style>
+        </div>
     );
 };
 

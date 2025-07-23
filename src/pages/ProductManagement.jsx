@@ -47,11 +47,31 @@ const ProductManagement = () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await productService.getAllProducts();
-            setProducts(data);
+
+            const productsResponse = await productService.getAllProducts();
+            console.log('🔍 ProductManagement - Products response:', productsResponse);
+
+            // Extraer array de productos si viene paginado
+            let productsData;
+            if (productsResponse?.data && Array.isArray(productsResponse.data)) {
+                // Si viene con formato { data: [...], pagination: {...} }
+                productsData = productsResponse.data;
+            } else if (Array.isArray(productsResponse)) {
+                // Si viene como array directo
+                productsData = productsResponse;
+            } else {
+                console.error(' Unexpected products format:', productsResponse);
+                productsData = [];
+            }
+
+            console.log(' ProductManagement - Products processed:', productsData.length);
+            setProducts(productsData);
+
         } catch (err) {
-            setError(err.message || 'Error al cargar productos');
             console.error('Error loading products:', err);
+            setError(err.message || 'Error al cargar productos');
+            // Establecer array vacío en caso de error
+            setProducts([]);
         } finally {
             setLoading(false);
         }
@@ -59,12 +79,23 @@ const ProductManagement = () => {
 
     const loadCategories = async () => {
         try {
-            const data = await productService.getCategories();
-            setCategories(data);
+            const categoriesResponse = await productService.getCategories();
+            console.log('🔍 ProductManagement - Categories response:', categoriesResponse);
+
+            // Asegurar que categories es un array
+            const categoriesData = Array.isArray(categoriesResponse) ? categoriesResponse : [];
+
+            console.log('✅ ProductManagement - Categories processed:', categoriesData.length);
+            setCategories(categoriesData);
+
         } catch (err) {
             console.error('Error loading categories:', err);
+            // Establecer array vacío en caso de error
+            setCategories([]);
         }
     };
+
+
 
     const handleDeleteProduct = async (productId, productName) => {
         if (window.confirm(`¿Estás seguro de que quieres eliminar "${productName}"? Esta acción no se puede deshacer.`)) {
@@ -82,8 +113,8 @@ const ProductManagement = () => {
         try {
             // Cargar producto completo con descripción
             const fullProduct = await productService.getProductById(product.id);
-            setEditingProduct(fullProduct); 
-            setShowCreateForm(true);       
+            setEditingProduct(fullProduct);
+            setShowCreateForm(true);
         } catch (error) {
             console.error('Error loading product for edit:', error);
             alert('Error al cargar el producto');
@@ -101,17 +132,17 @@ const ProductManagement = () => {
         loadProducts(); // Recargar productos después de crear/editar
     };
 
-    const filteredProducts = products.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === '' || product.category === selectedCategory;
+    const filteredProducts = Array.isArray(products) ? products.filter(product => {
+        const matchesSearch = product?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product?.description?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = selectedCategory === '' || product?.category === selectedCategory;
         return matchesSearch && matchesCategory;
-    });
+    }) : [];
 
     return (
         <div className="min-h-screen bg-gray-50 pt-16">
             {/* Header */}
-            <NavBar/>
+            <NavBar />
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

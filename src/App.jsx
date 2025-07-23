@@ -19,12 +19,13 @@ import AdminOrders from './pages/AdminOrders';
 import AdminOrderDetail from './pages/AdminOrderDetail';
 import AdminPendingOrders from './pages/AdminPendingOrders'; // Nueva página
 import Invoice from './components/Invoice';
+import Auth from './components/Auth/Auth';
 // import './App.css';
 
 function App() {
   return (
     <>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
@@ -57,8 +58,8 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/register" element={<Auth />} />
                 <Route path="/invoice/:orderId" element={<Invoice />} />
 
                 {/* Rutas de usuarios autenticados */}
@@ -70,6 +71,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
                 <Route
                   path="/my-profile"
                   element={
@@ -88,8 +90,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
-                {/* Gestión de productos */}
+
                 <Route
                   path="/admin/products"
                   element={
@@ -99,7 +100,6 @@ function App() {
                   }
                 />
 
-                {/* Gestión de órdenes y pagos */}
                 <Route
                   path="/admin/orders"
                   element={
@@ -108,7 +108,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
+
                 {/* Nueva ruta: Revisión de pagos pendientes */}
                 <Route
                   path="/admin/orders/pending-review"
@@ -130,7 +130,7 @@ function App() {
                 />
 
                 {/* Rutas adicionales para gestión de pagos */}
-                
+
                 {/* Filtros por estado de órdenes - usando query params */}
                 <Route
                   path="/admin/orders/pending-payment"
@@ -140,7 +140,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
+
                 <Route
                   path="/admin/orders/payment-approved"
                   element={
@@ -149,7 +149,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
+
                 <Route
                   path="/admin/orders/shipped"
                   element={

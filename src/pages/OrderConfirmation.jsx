@@ -103,7 +103,6 @@ const OrderConfirmation = () => {
             await orderService.uploadPaymentReceipt(orderId, selectedFile);
             setUploadSuccess(true);
             
-            // Recargar la orden para ver el nuevo estado
             await loadOrder();
             
             // Limpiar archivo seleccionado

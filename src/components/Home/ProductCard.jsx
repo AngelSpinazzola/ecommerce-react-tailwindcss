@@ -65,7 +65,7 @@ const ProductCard = ({ product, index = 0 }) => {
                     <div className="flex items-center justify-between pt-2">
                         <div className="space-y-1">
                             <div className="text-lg font-semibold text-gray-900">
-                                ${product.price.toFixed(2)}
+                                ${product.price.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </div>
                             
                             {product.stock > 0 && (

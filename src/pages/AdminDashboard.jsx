@@ -63,10 +63,34 @@ const AdminDashboard = () => {
             setLoading(true);
 
             // Cargar datos de productos (existente)
-            const [products, categories] = await Promise.all([
+            const [productsResponse, categories] = await Promise.all([
                 productService.getAllProducts(),
                 productService.getCategories()
             ]);
+
+            console.log('🔍 AdminDashboard - Products response:', productsResponse);
+            console.log('🔍 AdminDashboard - Categories response:', categories);
+
+            // ✅ CORREGIDO: Extraer array de productos si viene paginado
+            let products;
+            if (productsResponse?.data && Array.isArray(productsResponse.data)) {
+                // Si viene con formato { data: [...], pagination: {...} }
+                products = productsResponse.data;
+            } else if (Array.isArray(productsResponse)) {
+                // Si viene como array directo
+                products = productsResponse;
+            } else {
+                console.error('❌ Unexpected products format:', productsResponse);
+                products = [];
+            }
+
+            // ✅ Asegurar que categories es un array
+            const categoriesData = Array.isArray(categories) ? categories : [];
+
+            console.log('✅ AdminDashboard - Processed data:', {
+                products: products.length,
+                categories: categoriesData.length
+            });
 
             // Cargar datos de órdenes y pagos (nuevo)
             const [allOrders, pendingOrders] = await Promise.all([
@@ -74,18 +98,27 @@ const AdminDashboard = () => {
                 orderService.getOrdersPendingReview().catch(() => [])
             ]);
 
+            console.log('🔍 AdminDashboard - Orders data:', {
+                allOrders: allOrders.length,
+                pendingOrders: pendingOrders.length
+            });
+
+            // ✅ Asegurar que orders son arrays
+            const ordersData = Array.isArray(allOrders) ? allOrders : [];
+            const pendingOrdersData = Array.isArray(pendingOrders) ? pendingOrders : [];
+
             // Calcular estadísticas de productos (existente)
             const totalProducts = products.length;
             const activeProducts = products.filter(p => p.isActive).length;
             const lowStockProducts = products.filter(p => p.stock <= 5).length;
 
             // Distribución por categorías (existente)
-            const categoryDistribution = categories.map(category => {
+            const categoryDistribution = categoriesData.map(category => {
                 const count = products.filter(p => p.category === category).length;
                 return {
                     name: category,
                     value: count,
-                    percentage: ((count / totalProducts) * 100).toFixed(1)
+                    percentage: totalProducts > 0 ? ((count / totalProducts) * 100).toFixed(1) : '0'
                 };
             });
 
@@ -95,8 +128,8 @@ const AdminDashboard = () => {
                 .sort((a, b) => a.stock - b.stock)
                 .slice(0, 10)
                 .map(p => ({
-                    name: p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name,
-                    stock: p.stock
+                    name: p.name && p.name.length > 15 ? p.name.substring(0, 15) + '...' : (p.name || 'Sin nombre'),
+                    stock: p.stock || 0
                 }));
 
             // Productos recientes (existente)
@@ -105,18 +138,18 @@ const AdminDashboard = () => {
                 .slice(0, 5);
 
             // Calcular métricas de órdenes y pagos (nuevo)
-            const totalRevenue = allOrders
+            const totalRevenue = ordersData
                 .filter(o => ['payment_approved', 'shipped', 'delivered'].includes(o.status))
-                .reduce((sum, order) => sum + order.total, 0);
+                .reduce((sum, order) => sum + (order.total || 0), 0);
 
             const paymentStats = {
-                approved: allOrders.filter(o => ['payment_approved', 'shipped', 'delivered'].includes(o.status)).length,
-                rejected: allOrders.filter(o => o.status === 'payment_rejected').length,
-                pending: allOrders.filter(o => o.status === 'payment_submitted').length
+                approved: ordersData.filter(o => ['payment_approved', 'shipped', 'delivered'].includes(o.status)).length,
+                rejected: ordersData.filter(o => o.status === 'payment_rejected').length,
+                pending: ordersData.filter(o => o.status === 'payment_submitted').length
             };
 
-            const recentOrders = allOrders
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            const recentOrders = ordersData
+                .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
                 .slice(0, 5);
 
             setStats({
@@ -124,21 +157,43 @@ const AdminDashboard = () => {
                 totalProducts,
                 activeProducts,
                 lowStockProducts,
-                totalCategories: categories.length,
+                totalCategories: categoriesData.length,
                 categoryDistribution,
                 stockAnalysis,
                 recentProducts,
                 // Órdenes y pagos
-                totalOrders: allOrders.length,
-                pendingPayments: pendingOrders.length,
-                pendingShipments: allOrders.filter(o => o.status === 'payment_approved').length,
+                totalOrders: ordersData.length,
+                pendingPayments: pendingOrdersData.length,
+                pendingShipments: ordersData.filter(o => o.status === 'payment_approved').length,
                 totalRevenue,
                 recentOrders,
                 paymentStats
             });
 
+            console.log(' AdminDashboard - Stats calculated successfully');
+
         } catch (error) {
             console.error('Error loading dashboard data:', error);
+            // Establecer valores por defecto en caso de error
+            setStats({
+                totalProducts: 0,
+                activeProducts: 0,
+                lowStockProducts: 0,
+                totalCategories: 0,
+                categoryDistribution: [],
+                stockAnalysis: [],
+                recentProducts: [],
+                totalOrders: 0,
+                pendingPayments: 0,
+                pendingShipments: 0,
+                totalRevenue: 0,
+                recentOrders: [],
+                paymentStats: {
+                    approved: 0,
+                    rejected: 0,
+                    pending: 0
+                }
+            });
         } finally {
             setLoading(false);
         }
@@ -148,10 +203,9 @@ const AdminDashboard = () => {
     const COLORS = ['#4F46E5', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'];
 
     const StatCard = ({ title, value, subtitle, icon, color = 'indigo', onClick, isClickable = false }) => (
-        <div 
-            className={`bg-white rounded-lg shadow-md p-6 transition-all ${
-                isClickable ? 'hover:shadow-lg cursor-pointer transform hover:scale-105' : 'hover:shadow-lg'
-            }`}
+        <div
+            className={`bg-white rounded-lg shadow-md p-6 transition-all ${isClickable ? 'hover:shadow-lg cursor-pointer transform hover:scale-105' : 'hover:shadow-lg'
+                }`}
             onClick={onClick}
         >
             <div className="flex items-center">
@@ -295,7 +349,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <span className="text-lg font-bold text-green-700">{stats.paymentStats.approved}</span>
                             </div>
-                            
+
                             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                                 <div className="flex items-center">
                                     <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
@@ -303,7 +357,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <span className="text-lg font-bold text-yellow-700">{stats.paymentStats.pending}</span>
                             </div>
-                            
+
                             <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                                 <div className="flex items-center">
                                     <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
@@ -312,7 +366,7 @@ const AdminDashboard = () => {
                                 <span className="text-lg font-bold text-red-700">{stats.paymentStats.rejected}</span>
                             </div>
                         </div>
-                        
+
                         <div className="mt-4 pt-4 border-t border-gray-200">
                             <Link
                                 to="/admin/orders/pending-review"
@@ -334,7 +388,7 @@ const AdminDashboard = () => {
                                 Ver todas →
                             </Link>
                         </div>
-                        
+
                         <div className="space-y-3">
                             {stats.recentOrders.length > 0 ? (
                                 stats.recentOrders.map((order) => (

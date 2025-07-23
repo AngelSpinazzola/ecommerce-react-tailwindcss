@@ -8,6 +8,8 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         price: '',
         stock: '',
         category: '',
+        brand: '',        // 🆕 NUEVO
+        model: '',        // 🆕 NUEVO
         isActive: true
     });
 
@@ -17,8 +19,11 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [categories, setCategories] = useState([]);
+    const [brands, setBrands] = useState([]);      // 🆕 NUEVO
     const [isNewCategory, setIsNewCategory] = useState(false);
+    const [isNewBrand, setIsNewBrand] = useState(false);    // 🆕 NUEVO
     const [newCategory, setNewCategory] = useState('');
+    const [newBrand, setNewBrand] = useState('');          // 🆕 NUEVO
 
     useEffect(() => {
         if (product) {
@@ -28,6 +33,8 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                 price: product.price?.toString() || '',
                 stock: product.stock?.toString() || '',
                 category: product.category || '',
+                brand: product.brand || '',        // 🆕 NUEVO
+                model: product.model || '',        // 🆕 NUEVO
                 isActive: product.isActive ?? true
             });
 
@@ -35,6 +42,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         }
 
         loadCategories();
+        loadBrands();    // 🆕 NUEVO
     }, [product]);
 
     const loadProductImages = async (productId) => {
@@ -76,6 +84,17 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         }
     };
 
+    // 🆕 NUEVO - Cargar marcas
+    const loadBrands = async () => {
+        try {
+            const data = await productService.getBrands();
+            console.log('🔍 Brands loaded:', data); // ✅ Debug
+            setBrands(data);
+        } catch (err) {
+            console.error('Error loading brands:', err);
+        }
+    };
+
     const handleCategoryChange = (e) => {
         const selectedValue = e.target.value;
 
@@ -89,11 +108,36 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
             setFormData(prev => ({ ...prev, category: selectedValue }));
         }
     };
+
+    // 🆕 NUEVO - Manejo de marcas
+    const handleBrandChange = (e) => {
+        const selectedValue = e.target.value;
+
+        if (selectedValue === 'nueva') {
+            setIsNewBrand(true);
+            setNewBrand(''); 
+            setFormData(prev => ({ ...prev, brand: '' }));
+        } else {
+            setIsNewBrand(false);
+            setNewBrand('');
+            setFormData(prev => ({ ...prev, brand: selectedValue }));
+        }
+    };
+
     const handleNewCategoryChange = (e) => {
         const value = e.target.value;
         setNewCategory(value);
         if (isNewCategory) {
             setFormData(prev => ({ ...prev, category: value }));
+        }
+    };
+
+    // 🆕 NUEVO - Manejo de nueva marca
+    const handleNewBrandChange = (e) => {
+        const value = e.target.value;
+        setNewBrand(value);
+        if (isNewBrand) {
+            setFormData(prev => ({ ...prev, brand: value }));
         }
     };
 
@@ -297,14 +341,21 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
             newErrors.category = 'La categoría es requerida';
         }
 
+        // 🆕 NUEVO - Validación de marca
+        if (!formData.brand.trim()) {
+            newErrors.brand = 'La marca es requerida';
+        }
+
         if (images.length === 0) {
             newErrors.images = 'Debe agregar al menos una imagen';
         }
 
-        if (!formData.category.trim()) {
-            newErrors.category = 'La categoría es requerida';
-        } else if (isNewCategory && !newCategory.trim()) {
+        if (isNewCategory && !newCategory.trim()) {
             newErrors.category = 'Debe ingresar una nueva categoría';
+        }
+
+        if (isNewBrand && !newBrand.trim()) {
+            newErrors.brand = 'Debe ingresar una nueva marca';
         }
 
         setErrors(newErrors);
@@ -312,13 +363,17 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     };
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
+        // 🆕 ACTUALIZADO - Incluir nueva marca en formData
         if (isNewCategory) {
             setFormData(prev => ({ ...prev, category: newCategory }));
-            await new Promise(resolve => setTimeout(resolve, 50));
         }
+        if (isNewBrand) {
+            setFormData(prev => ({ ...prev, brand: newBrand }));
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 50));
 
         if (!validateForm()) {
             return;
@@ -333,6 +388,8 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                 price: parseFloat(formData.price),
                 stock: parseInt(formData.stock),
                 category: formData.category.trim(),
+                brand: formData.brand.trim(),      // 🆕 NUEVO
+                model: formData.model.trim(),      // 🆕 NUEVO
                 isActive: formData.isActive
             };
 
@@ -353,6 +410,8 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                     price: parseFloat(formData.price),
                     stock: parseInt(formData.stock),
                     category: formData.category.trim(),
+                    brand: formData.brand.trim(),      // 🆕 NUEVO
+                    model: formData.model.trim(),      // 🆕 NUEVO
                     isActive: formData.isActive
                 };
 
@@ -374,6 +433,10 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                         alert('Producto actualizado pero hubo un error con las imágenes: ' + imageError.message);
                     }
                 }
+                
+                // ✅ NUEVO - Recargar marcas y categorías después de actualizar
+                await loadBrands();
+                await loadCategories();
             } else {
                 if (newImages.length > 0) {
                     productData.imageFiles = newImages.map(img => img.file);
@@ -383,11 +446,16 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                     }
                 }
                 savedProduct = await productService.createProduct(productData);
+                
+                // ✅ NUEVO - Recargar marcas y categorías después de crear
+                await loadBrands();
+                await loadCategories();
             }
 
             onSuccess?.();
         } catch (err) {
-            alert('Error al guardar producto: ' + err.message);
+            console.error('🚨 Error saving product:', err);
+            alert('Error al guardar producto: ' + (err.response?.data?.message || err.message));
         } finally {
             setLoading(false);
         }
@@ -410,7 +478,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                         onChange={handleInputChange}
                         className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${errors.name ? 'border-red-500' : ''
                             }`}
-                        placeholder="Ej: Mate de calabaza"
+                        placeholder="Ej: RTX 4090 Gaming"
                     />
                     {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                 </div>
@@ -445,6 +513,54 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                     )}
 
                     {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
+                </div>
+
+                {/* 🆕 NUEVO - Marca */}
+                <div>
+                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
+                        Marca *
+                    </label>
+                    <select
+                        id="brand"
+                        name="brand"
+                        value={isNewBrand ? 'nueva' : formData.brand}
+                        onChange={handleBrandChange}
+                        className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${errors.brand ? 'border-red-500' : ''}`}
+                    >
+                        <option value="">Seleccionar marca</option>
+                        {brands.map(brand => (
+                            <option key={brand} value={brand}>{brand}</option>
+                        ))}
+                        <option value="nueva">+ Crear nueva marca</option>
+                    </select>
+
+                    {isNewBrand && (
+                        <input
+                            type="text"
+                            value={newBrand}
+                            onChange={handleNewBrandChange}
+                            placeholder="Ingrese nueva marca"
+                            className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        />
+                    )}
+
+                    {errors.brand && <p className="mt-1 text-sm text-red-600">{errors.brand}</p>}
+                </div>
+
+                {/* 🆕 NUEVO - Modelo */}
+                <div>
+                    <label htmlFor="model" className="block text-sm font-medium text-gray-700">
+                        Modelo
+                    </label>
+                    <input
+                        type="text"
+                        id="model"
+                        name="model"
+                        value={formData.model}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Ej: ROG Strix Gaming OC"
+                    />
                 </div>
 
                 {/* Precio */}
@@ -495,17 +611,28 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
             {/* Descripción */}
             <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                    Descripción
+                    Descripción <span className="text-gray-500">({formData.description.length}/1000 caracteres)</span>
                 </label>
                 <textarea
                     id="description"
                     name="description"
                     rows={3}
+                    maxLength={1000}
                     value={formData.description}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     placeholder="Describe las características del producto..."
                 />
+                {formData.description.length > 950 && (
+                    <p className="mt-1 text-sm text-amber-600">
+                        ⚠️ Te quedan {1000 - formData.description.length} caracteres
+                    </p>
+                )}
+                {formData.description.length >= 1000 && (
+                    <p className="mt-1 text-sm text-red-600">
+                        ❌ Has alcanzado el límite máximo de caracteres
+                    </p>
+                )}
             </div>
 
             {/* Estado activo */}

@@ -37,13 +37,13 @@ const Cart = () => {
 
     const handleCheckout = () => {
         if (!isAuthenticated) {
-            // Guardar la ruta actual para redirigir después del login
+            // Guarda la ruta actual para redirigir después del login
             localStorage.setItem('redirectAfterLogin', '/checkout');
             navigate('/login');
             return;
         }
-        
-        // Si está autenticado, proceder al checkout
+
+        // Si está autenticado, procede al checkout
         navigate('/checkout');
     };
 
@@ -73,13 +73,14 @@ const Cart = () => {
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Mi Carrito Gaming</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Mi Carrito</h1>
                     <p className="text-gray-600 mt-2">
                         {cartItems.length === 0
                             ? 'Tu carrito está vacío'
-                            : `${getCartItemsCount()} artículos en tu carrito`
+                            : `${getCartItemsCount()} ${getCartItemsCount() === 1 ? 'artículo' : 'artículos'} en tu carrito`
                         }
                     </p>
+
                 </div>
 
                 {cartItems.length === 0 ? (
@@ -89,13 +90,13 @@ const Cart = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
                         </svg>
                         <h3 className="mt-4 text-lg font-medium text-gray-900">Tu carrito está vacío</h3>
-                        <p className="mt-2 text-gray-500">¡Descubre productos gaming increíbles en nuestra tienda!</p>
+                        <p className="mt-2 text-gray-500">¡Descubre productos increíbles en nuestra tienda!</p>
                         <div className="mt-6">
                             <Link
                                 to="/"
                                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                             >
-                                🎮 Explorar productos gaming
+                                Explorar productos
                             </Link>
                         </div>
                     </div>
@@ -216,11 +217,10 @@ const Cart = () => {
                                 <button
                                     onClick={handleCheckout}
                                     disabled={cartItems.length === 0}
-                                    className={`block w-full text-center py-3 px-4 text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 transition-colors ${
-                                        cartItems.length === 0
+                                    className={`block w-full text-center py-3 px-4 text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 transition-colors ${cartItems.length === 0
                                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                             : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                    }`}
+                                        }`}
                                 >
                                     {!isAuthenticated ? '🔒 Iniciar sesión para continuar' : 'Proceder al checkout'}
                                 </button>

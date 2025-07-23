@@ -2,8 +2,8 @@ import api from './api';
 
 export const productService = {
   // Obtiene todos los productos (público)
-  getAllProducts: async () => {
-    const response = await api.get('/product');
+  getAllProducts: async (page = 1, pageSize = 20) => {
+    const response = await api.get(`/product?page=${page}&pageSize=${pageSize}`);
     return response.data;
   },
 
@@ -17,21 +17,27 @@ export const productService = {
   createProduct: async (productData) => {
     const formData = new FormData();
 
-    // Agrega campos de texto
+    // ✅ Campos básicos
     formData.append('Name', productData.name);
     formData.append('Description', productData.description || '');
     formData.append('Price', productData.price.toString());
     formData.append('Stock', productData.stock.toString());
     formData.append('Category', productData.category || '');
+    
+    // 🆕 NUEVOS - Brand y Model
+    formData.append('Brand', productData.brand || '');
+    if (productData.model) {
+      formData.append('Model', productData.model);
+    }
 
-    // Agrega múltiples imágenes si existen
+    // ✅ Agrega múltiples imágenes si existen
     if (productData.imageFiles && productData.imageFiles.length > 0) {
       for (let i = 0; i < productData.imageFiles.length; i++) {
         formData.append('ImageFiles', productData.imageFiles[i]);
       }
     }
 
-    // Agrega MainImageIndex si existe
+    // ✅ Agrega MainImageIndex si existe
     if (productData.mainImageIndex !== undefined) {
       formData.append('MainImageIndex', productData.mainImageIndex.toString());
     }
@@ -40,7 +46,6 @@ export const productService = {
     for (let pair of formData.entries()) {
       console.log(pair[0] + ': ', pair[1]);
     }
-
 
     const response = await api.post('/product', formData, {
       headers: {
@@ -59,25 +64,34 @@ export const productService = {
     formData.append('Price', productData.price.toString());
     formData.append('Stock', productData.stock.toString());
     formData.append('Category', productData.category || '');
+    
+    // 🆕 NUEVOS - Brand y Model
+    if (productData.brand) {
+      formData.append('Brand', productData.brand);
+    }
+    if (productData.model) {
+      formData.append('Model', productData.model);
+    }
+    
     formData.append('IsActive', productData.isActive.toString());
 
-    // Agrega nuevas imágenes si existen
+    // ✅ Agrega nuevas imágenes si existen
     if (productData.imageFiles && productData.imageFiles.length > 0) {
       for (let i = 0; i < productData.imageFiles.length; i++) {
         formData.append('ImageFiles', productData.imageFiles[i]);
       }
     }
 
-    // Agrega MainImageIndex si existe
+    // ✅ MainImageIndex
     if (productData.mainImageIndex !== undefined) {
       formData.append('MainImageIndex', productData.mainImageIndex.toString());
     }
 
-    // Justo antes de: const response = await api.put(`/product/${id}`, formData...
     console.log('🔍 FormData contents (UPDATE):');
     for (let pair of formData.entries()) {
       console.log(pair[0] + ': ', pair[1]);
     }
+    
     const response = await api.put(`/product/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -118,11 +132,11 @@ export const productService = {
       formData.append('MainImageIndex', imageData.mainImageIndex.toString());
     }
 
-    // Justo antes de: const response = await api.post(`/product/${productId}/images`, formData...
     console.log('🔍 FormData contents (ADD IMAGES):');
     for (let pair of formData.entries()) {
       console.log(pair[0] + ': ', pair[1]);
     }
+    
     const response = await api.post(`/product/${productId}/images`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -157,15 +171,55 @@ export const productService = {
     return response.data;
   },
 
+  // 🆕 NUEVO - Obtiene productos por marca (público)
+  getProductsByBrand: async (brand) => {
+    const response = await api.get(`/product/brand/${brand}`);
+    return response.data;
+  },
+
   // Busca productos (público)
   searchProducts: async (term) => {
     const response = await api.get(`/product/search?term=${encodeURIComponent(term)}`);
     return response.data;
   },
 
+  // 🆕 NUEVO - Filtrado avanzado
+  filterProducts: async (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    if (filters.category) params.append('category', filters.category);
+    if (filters.brand) params.append('brand', filters.brand);
+    if (filters.minPrice) params.append('minPrice', filters.minPrice);
+    if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+    if (filters.inStock !== undefined) params.append('inStock', filters.inStock);
+    if (filters.page) params.append('page', filters.page);
+    if (filters.pageSize) params.append('pageSize', filters.pageSize);
+
+    const response = await api.get(`/product/filter?${params.toString()}`);
+    return response.data;
+  },
+
   // Obtiene categorías (público)
   getCategories: async () => {
     const response = await api.get('/product/categories');
+    return response.data;
+  },
+
+  // 🆕 NUEVO - Obtiene marcas (público)
+  getBrands: async () => {
+    const response = await api.get('/product/brands');
+    return response.data;
+  },
+
+  // 🆕 NUEVO - Obtiene estructura de menú
+  getMenuStructure: async () => {
+    const response = await api.get('/product/menu-structure');
+    return response.data;
+  },
+
+  // 🆕 NUEVO - Obtiene estadísticas
+  getProductStats: async () => {
+    const response = await api.get('/product/stats');
     return response.data;
   },
 
