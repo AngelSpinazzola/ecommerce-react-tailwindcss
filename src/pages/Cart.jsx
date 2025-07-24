@@ -246,7 +246,7 @@ const Cart = () => {
                                                 </div>
 
                                                 {/* Controles de cantidad y eliminar */}
-                                                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-3 sm:mt-4">
+                                                <div className="flex flex-row sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-3 sm:mt-4">
                                                     {/* Botón eliminar */}
                                                     <button onClick={() => handleRemoveItem(item.id)}
                                                         className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-200 group/remove shadow-sm border border-red-200"
