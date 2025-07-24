@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -7,16 +7,14 @@ import NavBar from '../components/Common/NavBar';
 import SecondaryNavBar from '../components/Common/SecondaryNavBar';
 import toast from 'react-hot-toast';
 
-// Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
-
-// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/thumbs';
 import 'swiper/css/free-mode';
+
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -25,8 +23,9 @@ const ProductDetail = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [quantity, setQuantity] = useState(1);
-    const [thumbsSwiper, setThumbsSwiper] = useState(null);
+    const [activeSlide, setActiveSlide] = useState(0);
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const swiperRef = useRef(null);
     const { addToCart, isInCart, getItemQuantity, getCartItemsCount } = useCart();
 
     useEffect(() => {
@@ -47,10 +46,7 @@ const ProductDetail = () => {
     };
 
     const handleAddToCart = () => {
-        addToCart(product, quantity);
-        toast.success(`${quantity} x ${product.name} agregado al carrito 🛒`, {
-            position: 'top-center',
-        });
+        addToCart(product, 1);
     };
 
     // Crea array de imágenes para mostrar
@@ -197,7 +193,7 @@ const ProductDetail = () => {
                 <div className="px-4 sm:px-6 lg:px-8 py-12">
                     <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 lg:items-start">
 
-                        {/* Image Gallery con Swiper */}
+                        {/* Image Gallery */}
                         <div className="flex flex-col space-y-4">
                             {/* Category Navigation */}
                             <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -231,25 +227,21 @@ const ProductDetail = () => {
                                 )}
                             </div>
 
-                            {/* Main Swiper */}
+                            {/* Main Image */}
                             <div className="relative">
-                                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden shadow-xl">
-                                    {/* Gradiente decorativo */}
-                                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 z-10"></div>
-                                    
+                                <div className="rounded-2xl overflow-hidden">
+                                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 z-10"></div>
+
                                     <Swiper
-                                        modules={[Navigation, Pagination, Thumbs]}
+                                        modules={[Navigation]}
                                         spaceBetween={10}
                                         slidesPerView={1}
                                         navigation={{
                                             nextEl: '.swiper-button-next-custom',
                                             prevEl: '.swiper-button-prev-custom',
                                         }}
-                                        pagination={{ 
-                                            clickable: true,
-                                            dynamicBullets: true,
-                                        }}
-                                        thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                                        onSwiper={(swiper) => swiperRef.current = swiper}
+                                        onSlideChange={(swiper) => setActiveSlide(swiper.activeIndex)}
                                         className="h-96 lg:h-[500px]"
                                     >
                                         {displayImages.map((image, index) => (
@@ -266,15 +258,14 @@ const ProductDetail = () => {
                                         ))}
                                     </Swiper>
 
-                                    {/* Custom Navigation Buttons */}
                                     {displayImages.length > 1 && (
                                         <>
-                                            <div className="swiper-button-prev-custom absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/40 transition-all duration-200 cursor-pointer z-10 group">
+                                            <div className="swiper-button-prev-custom absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/20 backdrop-blur-md text-white rounded-full hidden lg:flex items-center justify-center hover:bg-black/40 transition-all duration-200 cursor-pointer z-20 group">
                                                 <svg className="w-6 h-6 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                                                 </svg>
                                             </div>
-                                            <div className="swiper-button-next-custom absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/40 transition-all duration-200 cursor-pointer z-10 group">
+                                            <div className="swiper-button-next-custom absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/20 backdrop-blur-md text-white rounded-full hidden lg:flex items-center justify-center hover:bg-black/40 transition-all duration-200 cursor-pointer z-20 group">
                                                 <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                                                 </svg>
@@ -282,45 +273,31 @@ const ProductDetail = () => {
                                         </>
                                     )}
                                 </div>
-
-                                {/* Thumbs Swiper */}
+                                {/* Thumbnails (mantén los originales o usa Swiper también) */}
                                 {displayImages.length > 1 && (
-                                    <div className="mt-4">
-                                        <Swiper
-                                            onSwiper={setThumbsSwiper}
-                                            modules={[FreeMode, Thumbs]}
-                                            spaceBetween={12}
-                                            slidesPerView={4}
-                                            freeMode={true}
-                                            watchSlidesProgress={true}
-                                            breakpoints={{
-                                                640: {
-                                                    slidesPerView: 5,
-                                                },
-                                                768: {
-                                                    slidesPerView: 6,
-                                                },
-                                                1024: {
-                                                    slidesPerView: 4,
-                                                },
-                                            }}
-                                            className="thumbs-swiper"
-                                        >
-                                            {displayImages.map((image, index) => (
-                                                <SwiperSlide key={`thumb-${image.id}`}>
-                                                    <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-purple-500 transition-all duration-200 cursor-pointer">
-                                                        <img
-                                                            src={productService.getImageUrl(image.url)}
-                                                            alt={`${product.name} thumbnail ${index + 1}`}
-                                                            className="w-full h-full object-cover"
-                                                            onError={(e) => {
-                                                                e.target.src = 'https://picsum.photos/80/80?random=' + (product.id + index);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </SwiperSlide>
-                                            ))}
-                                        </Swiper>
+                                    <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide mt-4">
+                                        {displayImages.map((image, index) => (
+                                            <button
+                                                key={image.id}
+                                                onClick={() => {
+                                                    setActiveSlide(index);
+                                                    swiperRef.current?.slideTo(index);
+                                                }}
+                                                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer ${activeSlide === index
+                                                    ? 'border-purple-500 shadow-lg transform scale-105'
+                                                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                                    }`}
+                                            >
+                                                <img
+                                                    src={productService.getImageUrl(image.url)}
+                                                    alt={`${product.name} ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.src = 'https://picsum.photos/80/80?random=' + (product.id + index);
+                                                    }}
+                                                />
+                                            </button>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -330,6 +307,8 @@ const ProductDetail = () => {
                         <div className="mt-12 lg:mt-0 space-y-8">
                             {/* Header */}
                             <div className="space-y-4">
+
+
                                 <h1 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight">
                                     {product.name}
                                 </h1>
@@ -347,7 +326,7 @@ const ProductDetail = () => {
                             </div>
 
                             {/* Description */}
-                            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
+                            <div className="p-6">
                                 <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center">
                                     <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -361,7 +340,7 @@ const ProductDetail = () => {
 
                             {/* Specs */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="p-4">
                                     <div className="flex items-center space-x-3">
                                         <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
                                             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -373,20 +352,6 @@ const ProductDetail = () => {
                                             <p className={`font-bold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                 {product.stock > 0 ? `${product.stock} unidades` : 'Agotado'}
                                             </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500">Garantía</p>
-                                            <p className="font-bold text-blue-600">12 meses</p>
                                         </div>
                                     </div>
                                 </div>
@@ -422,6 +387,25 @@ const ProductDetail = () => {
                                 </div>
                             )}
 
+                            {/* Add to cart - Solo para clientes */}
+                            {product.stock > 0 && user?.role !== 'Admin' && (
+                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6">
+                                    <form onSubmit={(e) => { e.preventDefault(); handleAddToCart(); }} className="space-y-6">
+                                        <div className="flex items-center space-x-4">
+                                            <button
+                                                type="submit"
+                                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-8 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 focus:scale-95 transition-all duration-200 flex items-center justify-center space-x-3 group"
+                                            >
+                                                <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293a1 1 0 001.414 1.414L10 13m0 0v6a2 2 0 002 2h2a2 2 0 002-2v-6m0 0V9a2 2 0 00-2-2H10a2 2 0 00-2 2v4.01" />
+                                                </svg>
+                                                <span>Sumar al carrito</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            )}
+
                             {/* Back to products */}
                             <div className="flex items-center justify-between pt-8 border-t border-gray-200">
                                 <Link
@@ -440,6 +424,19 @@ const ProductDetail = () => {
             </div>
 
             <style>{`
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+
+                .swiper-button-next,
+                .swiper-button-prev {
+                    display: none !important;
+                }
+                
                 .animation-delay-150 {
                     animation-delay: 150ms;
                 }
@@ -447,49 +444,6 @@ const ProductDetail = () => {
                 @keyframes spin {
                     to {
                         transform: rotate(360deg);
-                    }
-                }
-
-                /* Swiper Custom Styles */
-                .thumbs-swiper .swiper-slide {
-                    opacity: 0.4;
-                    transition: opacity 0.3s ease;
-                }
-                
-                .thumbs-swiper .swiper-slide-thumb-active {
-                    opacity: 1;
-                }
-                
-                .thumbs-swiper .swiper-slide-thumb-active .w-16 {
-                    border-color: #9333ea !important;
-                    transform: scale(1.05);
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                }
-
-                /* Custom pagination styles */
-                .swiper-pagination {
-                    bottom: 16px !important;
-                }
-                
-                .swiper-pagination-bullet {
-                    width: 8px !important;
-                    height: 8px !important;
-                    margin: 0 4px !important;
-                    opacity: 0.7 !important;
-                    background: #9333ea !important;
-                }
-                
-                .swiper-pagination-bullet-active {
-                    opacity: 1 !important;
-                    transform: scale(1.2);
-                    background: #7c3aed !important;
-                }
-
-                /* Hide default navigation on mobile */
-                @media (max-width: 1024px) {
-                    .swiper-button-prev-custom,
-                    .swiper-button-next-custom {
-                        display: none;
                     }
                 }
             `}</style>

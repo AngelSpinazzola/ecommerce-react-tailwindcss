@@ -5,12 +5,49 @@ const CartContext = createContext();
 
 // Clave para localStorage
 const CART_STORAGE_KEY = 'gametech_cart';
+const recentToasts = new Set();
 
 // Estados iniciales
 const initialState = {
   items: [],
   loading: false,
   error: null
+};
+
+// Control de toasts por categoría
+const activeToasts = {
+  cart: null,    // Para agregar/eliminar
+  error: null,   // Para errores
+  general: null  // Para otros
+};
+
+const showToastOnce = (message, type = 'success', category = 'general', options = {}) => {
+  if (recentToasts.has(message)) return;
+
+  // Dismiss el toast anterior de la misma categoría
+  if (activeToasts[category]) {
+    toast.dismiss(activeToasts[category]);
+  }
+
+  recentToasts.add(message);
+
+  // Remover después de 2 segundos
+  setTimeout(() => {
+    recentToasts.delete(message);
+    if (activeToasts[category]) {
+      activeToasts[category] = null;
+    }
+  }, 2000);
+
+  let toastId;
+  if (type === 'success') {
+    toastId = toast.success(message, options);
+  } else if (type === 'error') {
+    toastId = toast.error(message, options);
+  }
+
+  // Guardar el ID del toast activo
+  activeToasts[category] = toastId;
 };
 
 const loadCartFromStorage = () => {
@@ -84,7 +121,7 @@ const cartReducer = (state, action) => {
     case 'REMOVE_ITEM':
       const filteredItems = state.items.filter(item => item.id !== action.payload);
       saveCartToStorage(filteredItems);
-      
+
       return {
         ...state,
         items: filteredItems
@@ -148,7 +185,7 @@ export const CartProvider = ({ children }) => {
           const timestamp = new Date(parsedCart.timestamp);
           const now = new Date();
           const daysDiff = (now - timestamp) / (1000 * 60 * 60 * 24);
-          
+
           if (daysDiff > 30) {
             localStorage.removeItem(CART_STORAGE_KEY);
             dispatch({ type: 'CLEAR_CART' });
@@ -166,22 +203,22 @@ export const CartProvider = ({ children }) => {
     try {
       // Validaciones
       if (!product || !product.id) {
-        toast.error('Producto inválido');
+        showToastOnce('Producto inválido', 'error');
         return false;
       }
 
       if (quantity <= 0) {
-        toast.error('Cantidad debe ser mayor a 0');
+        showToastOnce('Cantidad debe ser mayor a 0', 'error');
         return false;
       }
 
       if (!product.isActive) {
-        toast.error('Este producto no está disponible');
+        showToastOnce('Este producto no está disponible', 'error');
         return false;
       }
 
       if (product.stock <= 0) {
-        toast.error('Producto sin stock');
+        showToastOnce('Producto sin stock', 'error');
         return false;
       }
 
@@ -191,7 +228,7 @@ export const CartProvider = ({ children }) => {
       const newTotalQuantity = currentQuantity + quantity;
 
       if (newTotalQuantity > product.stock) {
-        toast.error(`Solo hay ${product.stock} unidades disponibles`);
+        showToastOnce(`Solo hay ${product.stock} unidades disponibles`, 'error');
         return false;
       }
 
@@ -206,17 +243,32 @@ export const CartProvider = ({ children }) => {
       };
 
       dispatch({ type: 'ADD_ITEM', payload: cartItem });
-      
+
       if (existingItem) {
-        toast.success(`Cantidad actualizada: ${product.name}`);
+        showToastOnce('Actualizado', 'success', {
+          duration: 1500,
+          position: 'bottom-right',
+          style: {
+            fontSize: '13px',
+            padding: '8px 12px',
+            background: '#10B981',
+          },
+        });
       } else {
-        toast.success(`Agregado al carrito: ${product.name}`);
+        showToastOnce('✓ Agregado', 'success', {
+          duration: 1500,
+          position: 'bottom-right',
+          style: {
+            fontSize: '13px',
+            padding: '8px 12px',
+            background: '#10B981',
+          },
+        });
       }
-      
+
       return true;
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error('Error al agregar al carrito');
+      showToastOnce('Error al agregar al carrito', 'error');
       return false;
     }
   };
@@ -226,11 +278,13 @@ export const CartProvider = ({ children }) => {
       const item = state.items.find(item => item.id === productId);
       if (item) {
         dispatch({ type: 'REMOVE_ITEM', payload: productId });
-        toast.success(`Eliminado: ${item.name}`);
+        showToastOnce(`Eliminado: ${item.name}`, 'success', {
+          duration: 1500,
+          position: 'bottom-right',
+        });
       }
     } catch (error) {
-      console.error('Error removing from cart:', error);
-      toast.error('Error al eliminar del carrito');
+      showToastOnce('Error al eliminar del carrito', 'error');
     }
   };
 
@@ -249,7 +303,6 @@ export const CartProvider = ({ children }) => {
 
       dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity } });
     } catch (error) {
-      console.error('Error updating quantity:', error);
       toast.error('Error al actualizar cantidad');
     }
   };
@@ -257,10 +310,9 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => {
     try {
       dispatch({ type: 'CLEAR_CART' });
-      toast.success('Carrito vaciado');
+      showToastOnce('Carrito vaciado', 'success');
     } catch (error) {
-      console.error('Error clearing cart:', error);
-      toast.error('Error al vaciar carrito');
+      showToastOnce('Error al vaciar carrito', 'error');
     }
   };
 

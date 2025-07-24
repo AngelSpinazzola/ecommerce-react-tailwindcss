@@ -59,6 +59,26 @@ const SecondaryNavBar = () => {
         }, 100);
     };
 
+    // 🆕 NUEVA FUNCIÓN - Navegación a página de categorías
+    const navigateToCategoriesPage = (category = null, brand = null) => {
+        let path = '/categories';
+        let params = new URLSearchParams();
+        
+        if (category) {
+            params.append('category', category);
+        }
+        if (brand) {
+            params.append('brand', brand);
+        }
+        
+        if (params.toString()) {
+            path += '?' + params.toString();
+        }
+        
+        navigate(path);
+        setShowCategoriesDropdown(false);
+    };
+
     return (
         <div className="bg-gray-800/90 border-t border-gray-700 fixed top-20 w-full z-40">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -95,12 +115,22 @@ const SecondaryNavBar = () => {
                             {showCategoriesDropdown && (
                                 <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-96 bg-gray-900 rounded-xl shadow-2xl border border-gray-800 z-50 overflow-hidden max-h-96 overflow-y-auto">
                                     <div className="p-3">
+                                        {/* 🆕 NUEVO - Botón para ver todas las categorías */}
+                                        <div className="border-b border-gray-800 pb-3 mb-3">
+                                            <button
+                                                onClick={() => navigateToCategoriesPage()}
+                                                className="w-full text-left py-3 px-4 text-sm font-bold text-purple-400 hover:text-purple-300 hover:bg-purple-900/30 rounded-lg transition-all duration-200 bg-purple-900/20"
+                                            >
+                                                🔥 Ver todas las categorías
+                                            </button>
+                                        </div>
+
                                         <div className="grid grid-cols-1 gap-1">
                                             {menuStructure.categories.map((category) => (
                                                 <div key={category.name} className="border-b border-gray-800 last:border-b-0 py-1">
                                                     <div className="flex items-center justify-between">
                                                         <button
-                                                            onClick={() => navigateToProducts(category.name)}
+                                                            onClick={() => navigateToCategoriesPage(category.name)}
                                                             className="flex-1 text-left py-3 px-4 text-sm font-semibold text-gray-300 hover:text-purple-400 hover:bg-purple-900/20 rounded-lg transition-all duration-200"
                                                         >
                                                             {category.name}
@@ -130,7 +160,7 @@ const SecondaryNavBar = () => {
                                                                 {category.brands.map((brand) => (
                                                                     <button
                                                                         key={brand.name}
-                                                                        onClick={() => navigateToProducts(category.name, brand.name)}
+                                                                        onClick={() => navigateToCategoriesPage(category.name, brand.name)}
                                                                         className="text-left text-sm text-gray-400 hover:text-purple-400 py-2 px-3 rounded-lg hover:bg-purple-900/20 transition-colors"
                                                                     >
                                                                         • {brand.name}
