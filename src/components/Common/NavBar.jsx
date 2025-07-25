@@ -106,16 +106,6 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                             </svg>
                             <span>Mi Perfil</span>
                         </Link>
-                        <Link
-                            to="/wishlist"
-                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-400 hover:bg-purple-900/20 hover:text-purple-400 transition-all duration-200"
-                            onClick={() => setShowDropdown(false)}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            <span>Lista de Deseos</span>
-                        </Link>
                         <div className="border-t border-gray-800 mt-2">
                             <button
                                 onClick={() => {

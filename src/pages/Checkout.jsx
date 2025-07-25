@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { orderService } from '../services/orderService';
 import { productService } from '../services/productService';
 import NavBar from '../components/Common/NavBar';
+import AddressDropdown from '../components/AddressDropdown';
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -14,10 +15,10 @@ const Checkout = () => {
     const [customerData, setCustomerData] = useState({
         name: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : '',
         email: user?.email || '',
-        phone: '',
-        address: ''
+        phone: ''
     });
 
+    const [selectedAddressId, setSelectedAddressId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -44,6 +45,17 @@ const Checkout = () => {
         }
     };
 
+    const handleAddressSelect = (addressId) => {
+        setSelectedAddressId(addressId);
+        // Limpiar error de dirección si existe
+        if (errors.address) {
+            setErrors(prev => ({
+                ...prev,
+                address: ''
+            }));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -54,11 +66,23 @@ const Checkout = () => {
             const validation = orderService.validateCustomerData(customerData);
             if (!validation.isValid) {
                 setErrors(validation.errors);
+            }
+
+            // 2. Valida que haya dirección seleccionada
+            if (!selectedAddressId) {
+                setErrors(prev => ({
+                    ...prev,
+                    address: 'Debes seleccionar una dirección de envío'
+                }));
+            }
+
+            // Si hay errores, no continuar
+            if (!validation.isValid || !selectedAddressId) {
                 setLoading(false);
                 return;
             }
 
-            // 2. Valida carrito
+            // 3. Valida carrito
             const cartValidation = orderService.validateCart(cartItems);
             if (!cartValidation.isValid) {
                 alert(cartValidation.message);
@@ -66,14 +90,14 @@ const Checkout = () => {
                 return;
             }
 
-            // 3. Crea la orden
-            const orderData = orderService.formatOrderData(cartItems, customerData);
+            // 4. Crea la orden con la dirección seleccionada
+            const orderData = orderService.formatOrderData(cartItems, customerData, selectedAddressId);
             const createdOrder = await orderService.createOrder(orderData);
 
-            // 4. Limpia carrito
+            // 5. Limpia carrito
             clearCart();
 
-            // 5. Redirigir a página de confirmación
+            // 6. Redirigir a página de confirmación
             navigate(`/order-confirmation/${createdOrder.id}`);
 
         } catch (error) {
@@ -125,7 +149,7 @@ const Checkout = () => {
                         <div className="bg-white shadow rounded-lg p-6">
                             <h2 className="text-lg font-medium text-gray-900 mb-6">Datos de contacto</h2>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="space-y-6">
                                 {/* Nombre */}
                                 <div>
                                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -186,24 +210,15 @@ const Checkout = () => {
                                     )}
                                 </div>
 
-                                {/* Dirección */}
-                                <div>
-                                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                                        Dirección
-                                    </label>
-                                    <textarea
-                                        id="address"
-                                        name="address"
-                                        rows={3}
-                                        value={customerData.address}
-                                        onChange={handleInputChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        placeholder="Tu dirección completa (opcional)"
-                                    />
-                                </div>
+                                {/* Dropdown de Direcciones */}
+                                <AddressDropdown 
+                                    onAddressSelect={handleAddressSelect}
+                                    selectedAddressId={selectedAddressId}
+                                    error={errors.address}
+                                />
 
                                 {/* Botones */}
-                                <div className="flex space-x-4">
+                                <div className="flex space-x-4 pt-4">
                                     <Link
                                         to="/cart"
                                         className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-md text-center font-medium hover:bg-gray-300 transition-colors"
@@ -211,14 +226,15 @@ const Checkout = () => {
                                         ← Volver al carrito
                                     </Link>
                                     <button
-                                        type="submit"
+                                        type="button"
+                                        onClick={handleSubmit}
                                         disabled={loading}
                                         className="flex-1 bg-indigo-600 text-white py-3 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                     >
                                         {loading ? 'Procesando...' : 'Confirmar Pedido'}
                                     </button>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
@@ -270,9 +286,9 @@ const Checkout = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <div>
-                                        <h3 className="text-sm font-medium text-blue-800">Información</h3>
+                                        <h3 className="text-sm font-medium text-blue-800">Pago por transferencia</h3>
                                         <p className="text-sm text-blue-700">
-                                            Esta es una demostración. No se procesarán pagos reales.
+                                            Después de confirmar el pedido podrás subir tu comprobante de pago.
                                         </p>
                                     </div>
                                 </div>

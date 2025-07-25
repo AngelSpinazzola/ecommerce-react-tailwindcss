@@ -160,12 +160,12 @@ class OrderService {
   }
 
   // Formatea datos de orden para el API
-  formatOrderData(cartItems, customerData) {
+  formatOrderData(cartItems, customerData, selectedAddressId) {
     return {
       customerName: customerData.name,
       customerEmail: customerData.email,
       customerPhone: customerData.phone || '',
-      customerAddress: customerData.address || '',
+      shippingAddressId: selectedAddressId,
       items: cartItems.map(item => ({
         productId: item.id,
         quantity: item.quantity
@@ -182,18 +182,49 @@ class OrderService {
   validateCustomerData(customerData) {
     const errors = {};
 
+    // Valida nombre
     if (!customerData.name?.trim()) {
       errors.name = 'El nombre es requerido';
+    } else if (customerData.name.trim().length < 2) {
+      errors.name = 'El nombre debe tener al menos 2 caracteres';
+    } else if (customerData.name.trim().length > 100) {
+      errors.name = 'El nombre no puede exceder 100 caracteres';
+    } else if (!/^[a-zA-ZáéíóúñÁÉÍÓÚÑüÜ\s\-\.]+$/.test(customerData.name.trim())) {
+      errors.name = 'El nombre solo puede contener letras, espacios, guiones y puntos';
     }
 
+    // Valida email
     if (!customerData.email?.trim()) {
       errors.email = 'El email es requerido';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) {
       errors.email = 'El email no es válido';
     }
 
-    if (customerData.phone && !/^[\d\s\-\+\(\)]{7,}$/.test(customerData.phone)) {
-      errors.phone = 'El teléfono no es válido';
+    // Valida teléfono 
+    if (customerData.phone?.trim()) {
+      const phone = customerData.phone.trim();
+
+      // Debe tener entre 8 y 20 caracteres
+      if (phone.length < 8 || phone.length > 20) {
+        errors.phone = 'El teléfono debe tener entre 8 y 20 caracteres';
+      }
+      // Solo puede contener números, espacios, guiones, paréntesis y el signo +
+      else if (!/^[\d\s\-\+\(\)]{8,20}$/.test(phone)) {
+        errors.phone = 'Formato de teléfono inválido. Ej: +54 11 1234-5678 o 1234567890';
+      }
+      // No puede tener solo números repetidos
+      else if (/^(\d)\1+$/.test(phone.replace(/[\s\-\+\(\)]/g, ''))) {
+        errors.phone = 'El teléfono no puede tener solo números repetidos';
+      }
+      // No puede ser muy largo sin espacios/guiones
+      else {
+        const digitsOnly = phone.replace(/[\s\-\+\(\)]/g, '');
+        if (digitsOnly.length > 15) {
+          errors.phone = 'El teléfono tiene demasiados dígitos';
+        } else if (digitsOnly.length < 7) {
+          errors.phone = 'El teléfono debe tener al menos 7 dígitos';
+        }
+      }
     }
 
     return {
@@ -247,7 +278,7 @@ class OrderService {
 
   // Formatea precio
   formatPrice(price) {
-    return price.toFixed(2);
+    return Math.round(parseFloat(price)).toLocaleString('es-AR');
   }
 
   getStatusColor(status) {
@@ -303,33 +334,33 @@ class OrderService {
 
   async downloadReceipt(orderId) {
     try {
-        const response = await apiService.get(`/order/${orderId}/download-receipt`, {
-            responseType: 'blob' // ← Importante para archivos
-        });
+      const response = await apiService.get(`/order/${orderId}/download-receipt`, {
+        responseType: 'blob' // ← Importante para archivos
+      });
 
-        // Crear descarga automática
-        const blob = new Blob([response.data]);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `comprobante_orden_${orderId}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        
-        return true;
+      // Crear descarga automática
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `comprobante_orden_${orderId}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      return true;
     } catch (error) {
-        console.error('Error downloading receipt:', error);
-        throw error;
+      console.error('Error downloading receipt:', error);
+      throw error;
     }
   }
 
   async getReceiptViewUrl(orderId) {
     try {
-        // Para "ver en nueva pestaña", generamos una URL temporal
-        const token = localStorage.getItem('token');
-        return `${apiService.defaults.baseURL}/order/${orderId}/download-receipt?token=${token}`;
+      // Para "ver en nueva pestaña", generamos una URL temporal
+      const token = localStorage.getItem('token');
+      return `${apiService.defaults.baseURL}/order/${orderId}/download-receipt?token=${token}`;
     } catch (error) {
-        throw error;
+      throw error;
     }
   }
 }
