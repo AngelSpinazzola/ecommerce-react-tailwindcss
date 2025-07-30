@@ -4,7 +4,8 @@ export const authService = {
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
 
-    if (response.data.token) {
+    // Guardar automáticamente después del registro exitoso
+    if (response.data && response.data.token && response.data.user) {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
     }

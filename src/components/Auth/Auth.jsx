@@ -21,17 +21,20 @@ const Auth = () => {
         }
     }, [isAuthenticated, user, navigate]);
 
-    const handleRedirectAfterLogin = () => {
+    const handleRedirectAfterLogin = (userFromResponse = null) => {
         const redirectPath = localStorage.getItem('redirectAfterLogin');
-        
+
+        // Usar el usuario pasado como parámetro o el del contexto
+        const currentUser = userFromResponse || user;
+
         if (redirectPath) {
             localStorage.removeItem('redirectAfterLogin');
             navigate(redirectPath);
         } else {
-            if (user.role === 'Admin') {
+            if (currentUser?.role === 'Admin') {
                 navigate('/admin/dashboard');
             } else {
-                navigate('/'); 
+                navigate('/');
             }
         }
     };
@@ -46,19 +49,22 @@ const Auth = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (isLogin) {
             const result = await login({
                 email: formData.email,
                 password: formData.password
             });
-            if (result.success && result.user) {
+            if (result.success) {
+                // El contexto ya tiene el usuario actualizado para login
                 handleRedirectAfterLogin();
             }
         } else {
             const result = await register(formData);
             if (result.success) {
-                handleRedirectAfterLogin();
+                // Para registro, obtener el usuario desde localStorage
+                const storedUser = authService.getStoredUser();
+                handleRedirectAfterLogin(storedUser);
             }
         }
     };
@@ -76,20 +82,20 @@ const Auth = () => {
     return (
         <>
             <NavBar />
-            
+
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pt-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
                     <div className="flex items-center justify-center min-h-[calc(100vh-140px)] sm:min-h-[calc(100vh-200px)]">
                         <div className="max-w-lg w-full">
                             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 relative overflow-hidden transform transition-all duration-500 hover:shadow-2xl">
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 transform origin-left transition-transform duration-700 scale-x-100"></div>
-                                
+
                                 <div className="relative">
                                     <div className="text-center mb-6 sm:mb-8">
                                         <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg transform transition-all duration-300 hover:rotate-12 hover:scale-110">
                                             <span className="text-white font-black text-lg sm:text-xl">GT</span>
                                         </div>
-                                        
+
                                         <div className="overflow-hidden">
                                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 transform transition-all duration-500 ease-out">
                                                 {isLogin ? 'Bienvenido de vuelta' : 'Únete a GameTech'}
@@ -101,30 +107,27 @@ const Auth = () => {
                                     </div>
 
                                     <div className="relative mb-6 sm:mb-8 bg-gray-100 rounded-xl p-1">
-                                        <div 
-                                            className={`absolute top-1 bottom-1 w-1/2 bg-white rounded-lg shadow-md transform transition-all duration-300 ease-out ${
-                                                isLogin ? 'translate-x-0' : 'translate-x-full'
-                                            }`}
+                                        <div
+                                            className={`absolute top-1 bottom-1 w-1/2 bg-white rounded-lg shadow-md transform transition-all duration-300 ease-out ${isLogin ? 'translate-x-0' : 'translate-x-full'
+                                                }`}
                                         ></div>
-                                        
+
                                         <div className="relative flex">
                                             <button
                                                 onClick={() => setIsLogin(true)}
-                                                className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 relative z-10 ${
-                                                    isLogin
-                                                        ? 'text-purple-600'
-                                                        : 'text-gray-600 hover:text-gray-800'
-                                                }`}
+                                                className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 relative z-10 ${isLogin
+                                                    ? 'text-purple-600'
+                                                    : 'text-gray-600 hover:text-gray-800'
+                                                    }`}
                                             >
                                                 Iniciar Sesión
                                             </button>
                                             <button
                                                 onClick={() => setIsLogin(false)}
-                                                className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 relative z-10 ${
-                                                    !isLogin
-                                                        ? 'text-purple-600'
-                                                        : 'text-gray-600 hover:text-gray-800'
-                                                }`}
+                                                className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 relative z-10 ${!isLogin
+                                                    ? 'text-purple-600'
+                                                    : 'text-gray-600 hover:text-gray-800'
+                                                    }`}
                                             >
                                                 Registrarse
                                             </button>
@@ -263,7 +266,7 @@ const Auth = () => {
                                                 ¿Olvidaste tu contraseña?
                                             </Link>
                                         )}
-                                        
+
                                         <div className="border-t border-gray-200 pt-4">
                                             <Link
                                                 to="/"
@@ -282,7 +285,7 @@ const Auth = () => {
                     </div>
                 </div>
             </div>
-            
+
             <style jsx>{`
                 @keyframes fadeInUp {
                     from {
