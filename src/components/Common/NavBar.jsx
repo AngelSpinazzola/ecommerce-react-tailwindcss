@@ -129,21 +129,19 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                     <div className="flex justify-between items-center h-20">
 
                         {/* Mobile burger menu (lado izquierdo) */}
-                        {isAuthenticated && (
-                            <div className="md:hidden flex items-center">
-                                <button
-                                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                    className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors"
-                                >
-                                    {/* Icono más pequeño */}
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-                                    </svg>
-                                </button>
-                            </div>
-                        )}
+                        <div className="md:hidden flex items-center">
+                            <button
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors"
+                            >
+                                {/* Icono más pequeño */}
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                                </svg>
+                            </button>
+                        </div>
                         {/* Logo - Centrado en móvil */}
-                        <Link to="/" className={`flex items-center flex-shrink-0 md:mr-auto md:ml-0 ${isAuthenticated ? '-ml-5' : 'ml-4'}`}>
+                        <Link to="/" className="flex items-center flex-shrink-0 md:mr-auto md:ml-0 -ml-5">
                             <div className="flex items-center space-x-1 sm:space-x-3">
                                 <div className="relative">
                                     {/* Glowing Circuit Hexagon */}
@@ -266,8 +264,8 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                             {/* Dropdown de usuario para móvil */}
                             {isAuthenticated ? (
                                 <div className="relative dropdown-container">
-                                    <button
-                                        onClick={() => setShowDropdown(!showDropdown)}
+                                    <button 
+                                        onClick={() => setShowDropdown(!showDropdown)} 
                                         className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -394,7 +392,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                         </Link>
                                         <Link
                                             to="/products"
-                                            className="flex items-center space-x-3 p-3 text-nova-gray-400 rounded-xl transition-all duration-200"
+                                             className="flex items-center space-x-3 p-3 text-gray-400 rounded-xl transition-all duration-200"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
