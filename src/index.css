@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Flowbite CSS */
+@import url('https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css');
+
 /* Configuración base de fuentes */
 @layer base {
   body {

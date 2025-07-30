@@ -1,0 +1,72 @@
+:root {
+  /* Colores principales */
+  --nova-cyan: #22d3ee;
+  --nova-indigo: #818cf8;
+  --nova-purple: #c084fc;
+  
+  /* Colores de apoyo */
+  --nova-cyan-dark: #06b6d4;
+  --nova-blue: #3b82f6;
+  --nova-purple-dark: #9333ea;
+  
+  /* Neutros */
+  --nova-black: #000000;
+  --nova-white: #ffffff;
+  --nova-gray-900: #111827;
+  --nova-gray-800: #1f2937;
+  --nova-gray-700: #374151;
+  --nova-gray-400: #9ca3af;
+  
+  /* Gradientes */
+  --nova-gradient-primary: linear-gradient(to right, var(--nova-cyan), var(--nova-purple));
+  --nova-gradient-text: linear-gradient(to right, var(--nova-white), var(--nova-cyan));
+  --nova-gradient-button: linear-gradient(to right, var(--nova-cyan-dark), var(--nova-purple-dark));
+  
+  /* Sombras */
+  --nova-shadow-cyan: 0 0 20px rgba(34, 211, 238, 0.3);
+  --nova-shadow-purple: 0 0 20px rgba(192, 132, 252, 0.3);
+  
+  /* Transiciones */
+  --nova-transition: all 0.3s ease;
+  --nova-transition-fast: all 0.2s ease;
+}
+
+/* Clases utilitarias personalizadas */
+.nova-gradient-text {
+  background: var(--nova-gradient-text);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.nova-gradient-bg {
+  background: var(--nova-gradient-primary);
+}
+
+.nova-button-primary {
+  background: var(--nova-gradient-button);
+  color: var(--nova-white);
+  transition: var(--nova-transition);
+}
+
+.nova-button-primary:hover {
+  transform: scale(1.05);
+  box-shadow: var(--nova-shadow-cyan);
+}
+
+.nova-border-glow {
+  border: 1px solid var(--nova-cyan);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
+}
+
+.nova-text-cyan {
+  color: var(--nova-cyan);
+}
+
+.nova-text-purple {
+  color: var(--nova-purple);
+}
+
+.nova-bg-dark {
+  background-color: var(--nova-gray-900);
+}
