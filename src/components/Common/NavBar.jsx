@@ -25,10 +25,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
     }, [showDropdown]);
 
     const CartButton = () => (
-        <Link
-            to="/cart"
-            className="relative p-2 text-nova-gray-400 hover:text-nova-cyan transition-colors group"
-        >
+        <Link to="/cart" className="relative p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors group">
             {/* Icono más pequeño en móvil */}
             <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 576 512">
                 <path d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z" />
@@ -45,7 +42,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
     const SearchButton = () => (
         <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className="p-2 text-nova-gray-400 hover:text-nova-cyan transition-colors"
+            className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors"
         >
             {/* Icono más pequeño */}
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +78,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                     <div className="py-2">
                         <Link
                             to="/my-orders"
-                            className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 hover:bg-nova-cyan/10 hover:text-nova-cyan transition-all duration-200"
+                            className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 md:hover:bg-nova-cyan/10 md:hover:text-nova-cyan transition-all duration-200"
                             onClick={() => setShowDropdown(false)}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,19 +129,21 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                     <div className="flex justify-between items-center h-20">
 
                         {/* Mobile burger menu (lado izquierdo) */}
-                        <div className="md:hidden flex items-center">
-                            <button
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className="p-2 text-nova-gray-400 hover:text-nova-cyan transition-colors"
-                            >
-                                {/* Icono más pequeño */}
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-                                </svg>
-                            </button>
-                        </div>
+                        {isAuthenticated && (
+                            <div className="md:hidden flex items-center">
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                    className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors"
+                                >
+                                    {/* Icono más pequeño */}
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                         {/* Logo - Centrado en móvil */}
-                        <Link to="/" className="flex items-center flex-shrink-0 md:mr-auto md:ml-0 -ml-5">
+                        <Link to="/" className={`flex items-center flex-shrink-0 md:mr-auto md:ml-0 ${isAuthenticated ? '-ml-5' : 'ml-4'}`}>
                             <div className="flex items-center space-x-1 sm:space-x-3">
                                 <div className="relative">
                                     {/* Glowing Circuit Hexagon */}
@@ -264,25 +263,22 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                         <div className="md:hidden flex items-center space-x-2">
                             {showSearch && <SearchButton />}
                             {user?.role !== 'Admin' && <CartButton />}
-
                             {/* Dropdown de usuario para móvil */}
                             {isAuthenticated ? (
                                 <div className="relative dropdown-container">
                                     <button
                                         onClick={() => setShowDropdown(!showDropdown)}
-                                        className="p-2 text-nova-gray-400 hover:text-nova-cyan transition-colors"
-                                    >
+                                        className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                     </button>
-
                                     {showDropdown && (
                                         <div className="absolute right-0 mt-2 w-48 bg-gray-900 rounded-xl shadow-2xl border border-gray-800 z-50 overflow-hidden">
                                             <div className="py-2">
                                                 <Link
                                                     to="/my-profile"
-                                                    className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 hover:bg-nova-cyan/10 hover:text-nova-cyan transition-all duration-200"
+                                                    className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 transition-all duration-200"
                                                     onClick={() => setShowDropdown(false)}
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,7 +289,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
 
                                                 <Link
                                                     to="/my-orders"
-                                                    className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 hover:bg-nova-cyan/10 hover:text-nova-cyan transition-all duration-200"
+                                                    className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 transition-all duration-200"
                                                     onClick={() => setIsMobileMenuOpen(false)}
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,7 +302,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                                         setShowDropdown(false);
                                                         logout();
                                                     }}
-                                                    className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-400 hover:bg-red-900/20 hover:text-red-400 transition-all duration-200"
+                                                    className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-400 transition-all duration-200"
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -321,7 +317,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                 // Si no está autenticado, mostrar icono de usuario
                                 <Link
                                     to="/login"
-                                    className="p-2 text-nova-gray-400 hover:text-nova-cyan transition-colors"
+                                    className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -388,7 +384,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                     <div className="space-y-2">
                                         <Link
                                             to="/"
-                                            className="flex items-center space-x-3 p-3 text-nova-gray-400 hover:text-nova-cyan hover:bg-nova-cyan/10 rounded-xl transition-all duration-200"
+                                            className="flex items-center space-x-3 p-3 text-gray-400 rounded-xl transition-all duration-200"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -398,7 +394,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                         </Link>
                                         <Link
                                             to="/products"
-                                            className="flex items-center space-x-3 p-3 text-nova-gray-400 hover:text-nova-cyan hover:bg-nova-cyan/10 rounded-xl transition-all duration-200"
+                                            className="flex items-center space-x-3 p-3 text-nova-gray-400 rounded-xl transition-all duration-200"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
