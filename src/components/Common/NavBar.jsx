@@ -183,7 +183,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                     <div className="hidden sm:block">
                                         <div className="text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-cyan-300">
                                             <span className="font-thin">NOVA</span>{' '}
-                                            <span className="font-semibold">GAMING</span>
+                                            <span className="font-semibold">TECH</span>
                                         </div>
                                         <div className="text-xs font-medium text-cyan-400/80 tracking-wider uppercase mt-1">
                                             HARDWARE STORE
@@ -194,7 +194,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                     <div className="block sm:hidden">
                                         <div className="text-sm tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-cyan-300 leading-tight">
                                             <div className="font-thin">NOVA</div>
-                                            <div className="font-semibold">GAMING</div>
+                                            <div className="font-semibold">TECH</div>
                                         </div>
                                     </div>
                                 </div>

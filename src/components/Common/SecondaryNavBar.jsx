@@ -61,7 +61,7 @@ const SecondaryNavBar = () => {
 
     // 🆕 NUEVA FUNCIÓN - Navegación a página de categorías
     const navigateToCategoriesPage = (category = null, brand = null) => {
-        let path = '/categories';
+        let path = '/products';
         let params = new URLSearchParams();
         
         if (category) {

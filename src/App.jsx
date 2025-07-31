@@ -7,7 +7,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import Home from './pages/Home';
-import CategoriesPage from './pages/CategoriesPage';
+import ProductsPage from './pages/ProductsPage';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -18,7 +18,7 @@ import ProductManagement from './pages/ProductManagement';
 import ProtectedRoute from './components/Common/ProtectedRoute.jsx';
 import AdminOrders from './pages/AdminOrders';
 import AdminOrderDetail from './pages/AdminOrderDetail';
-import AdminPendingOrders from './pages/AdminPendingOrders'; 
+import AdminPendingOrders from './pages/AdminPendingOrders';
 import Invoice from './components/Invoice';
 import Auth from './components/Auth/Auth';
 // import './App.css';
@@ -55,7 +55,6 @@ function App() {
               <Routes>
                 {/* Rutas públicas */}
                 <Route path="/" element={<Home />} />
-                <Route path="/categories" element={<CategoriesPage />} /> {/* 🆕 NUEVA RUTA */}
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
@@ -159,8 +158,8 @@ function App() {
                   }
                 />
 
-                <Route path="/categories" element={<CategoriesPage />} />
-                <Route path="/category/:categoryName" element={<CategoriesPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/products/:categoryName" element={<ProductsPage />} />
 
                 {/* Redirecciones legacy */}
                 <Route path="/customer/dashboard" element={<Navigate to="/" replace />} />
