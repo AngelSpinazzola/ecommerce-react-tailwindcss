@@ -29,11 +29,11 @@ export const useProductData = () => {
 
             setMenuStructure(menuResponse || { categories: [] });
 
-            const productsData = Array.isArray(productsResponse?.data) 
-                ? productsResponse.data 
-                : Array.isArray(productsResponse) 
-                ? productsResponse 
-                : [];
+            const productsData = Array.isArray(productsResponse?.data)
+                ? productsResponse.data
+                : Array.isArray(productsResponse)
+                    ? productsResponse
+                    : [];
 
             setAllProducts(productsData);
             setProducts(productsData);
@@ -59,21 +59,47 @@ export const useProductData = () => {
             const { selectedCategory, selectedBrand, searchTerm, selectedSubcategory } = filters;
 
             if (searchTerm?.trim()) {
-                const searchResults = await productService.searchProducts(searchTerm);
-                let finalProducts = searchResults || [];
+                try {
+                    const searchResults = await productService.searchProducts(searchTerm);
+                    let finalProducts = searchResults || [];
 
-                if (selectedSubcategory) {
-                    finalProducts = finalProducts.filter(product => {
-                        const subcategory = detectSubcategory(product.name, selectedCategory || product.category);
-                        return subcategory?.id === selectedSubcategory;
-                    });
+                    if (selectedSubcategory) {
+                        finalProducts = finalProducts.filter(product => {
+                            const subcategory = detectSubcategory(product.name, selectedCategory || product.category);
+                            return subcategory?.id === selectedSubcategory;
+                        });
+                    }
+
+                    setProducts(finalProducts);
+                    setTotalProducts(finalProducts.length);
+                    setHasNextPage(false);
+                    setCurrentPage(1);
+                    return;
+                } catch (error) {
+                    // ✅ FALLBACK: Si falla el backend, buscar localmente
+                    console.warn('Backend search failed, using local search:', error.message);
+
+                    const term = searchTerm.toLowerCase();
+                    let searchResults = allProducts.filter(product =>
+                        product.name?.toLowerCase().includes(term) ||
+                        product.brand?.toLowerCase().includes(term) ||
+                        product.category?.toLowerCase().includes(term) ||
+                        product.description?.toLowerCase().includes(term)
+                    );
+
+                    if (selectedSubcategory) {
+                        searchResults = searchResults.filter(product => {
+                            const subcategory = detectSubcategory(product.name, selectedCategory || product.category);
+                            return subcategory?.id === selectedSubcategory;
+                        });
+                    }
+
+                    setProducts(searchResults);
+                    setTotalProducts(searchResults.length);
+                    setHasNextPage(false);
+                    setCurrentPage(1);
+                    return;
                 }
-
-                setProducts(finalProducts);
-                setTotalProducts(finalProducts.length);
-                setHasNextPage(false);
-                setCurrentPage(1);
-                return;
             }
 
             const apiFilters = {};
@@ -140,7 +166,7 @@ export const useProductData = () => {
         currentPage,
         hasNextPage,
         loadingMore,
-        
+
         // Funciones
         loadData,
         filterProducts,

@@ -3,8 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toaster } from 'react-hot-toast';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import Home from './pages/Home';
 import ProductsPage from './pages/ProductsPage';
@@ -56,11 +54,10 @@ function App() {
                 {/* Rutas públicas */}
                 <Route path="/" element={<Home />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-                <Route path="/login" element={<Auth />} />
-                <Route path="/register" element={<Auth />} />
                 <Route path="/invoice/:orderId" element={<Invoice />} />
 
                 {/* Rutas de usuarios autenticados */}
@@ -164,6 +161,10 @@ function App() {
                 {/* Redirecciones legacy */}
                 <Route path="/customer/dashboard" element={<Navigate to="/" replace />} />
                 <Route path="/dashboard" element={<Navigate to="/" replace />} />
+
+                {/* Redirecciones de login/register a auth */}
+                <Route path="/login" element={<Navigate to="/auth" replace />} />
+                <Route path="/register" element={<Navigate to="/auth" replace />} />
 
                 {/* Wishlist (placeholder para futuro) */}
                 <Route path="/wishlist" element={<Navigate to="/" replace />} />

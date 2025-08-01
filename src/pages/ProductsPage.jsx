@@ -132,7 +132,7 @@ const ProductsPage = () => {
                 productData.filterProducts(filtersData, 1, false);
             }
         }
-    }, [filters.selectedCategory, filters.selectedBrand, filters.selectedSubcategory, productData.allProducts.length]);
+    }, [filters.selectedCategory, filters.selectedBrand, filters.selectedSubcategory, filters.searchTerm, productData.allProducts.length]); 
 
     // Separar la actualización de URL
     useEffect(() => {

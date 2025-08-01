@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import SearchBar from './SearchBar';
 import '../../App.css';
 
 const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showMobileSearch, setShowMobileSearch] = useState(false);
-
     const { isAuthenticated, user, logout } = useAuth();
     const { getCartItemsCount } = useCart();
     const navigate = useNavigate();
@@ -204,18 +204,11 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                         {/* Search Bar Desktop */}
                         {showSearch && (
                             <div className="flex-1 max-w-2xl ml-6 mr-20 hidden md:block">
-                                <div className="relative group">
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar productos.."
-                                        value={searchTerm || ''}
-                                        onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
-                                        className="w-full px-5 py-3 pl-12 bg-gray-900 border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-nova-cyan focus:border-nova-cyan transition-all duration-200 group-hover:border-gray-600 text-base"
-                                    />
-                                    <svg className="absolute left-4 top-3.5 w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
+                                <SearchBar
+                                    searchTerm={searchTerm}
+                                    setSearchTerm={setSearchTerm}
+                                    placeholder="Buscar productos..."
+                                />
                             </div>
                         )}
 
@@ -264,8 +257,8 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                             {/* Dropdown de usuario para móvil */}
                             {isAuthenticated ? (
                                 <div className="relative dropdown-container">
-                                    <button 
-                                        onClick={() => setShowDropdown(!showDropdown)} 
+                                    <button
+                                        onClick={() => setShowDropdown(!showDropdown)}
                                         className="p-2 text-nova-gray-400 md:hover:text-nova-cyan transition-colors">
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -331,20 +324,14 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                     <div className="md:hidden bg-gray-900 border-t border-gray-800 p-4 fixed top-20 w-full z-50">
                         <div className="max-w-7xl mx-auto">
                             <div className="relative">
-                                <input
-                                    type="text"
+                                <SearchBar
+                                    searchTerm={searchTerm}
+                                    setSearchTerm={setSearchTerm}
                                     placeholder="Buscar componentes gaming..."
-                                    value={searchTerm || ''}
-                                    onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
-                                    className="w-full px-4 py-3 pl-10 bg-black border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-nova-cyan focus:border-nova-cyan transition-all"
-                                    autoFocus
                                 />
-                                <svg className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
                                 <button
                                     onClick={() => setShowMobileSearch(false)}
-                                    className="absolute right-3 top-3.5 text-gray-500 hover:text-white"
+                                    className="absolute right-3 top-3.5 text-gray-500 hover:text-white z-10"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6m0 0L6 6l12 12" />
@@ -392,7 +379,7 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                         </Link>
                                         <Link
                                             to="/products"
-                                             className="flex items-center space-x-3 p-3 text-gray-400 rounded-xl transition-all duration-200"
+                                            className="flex items-center space-x-3 p-3 text-gray-400 rounded-xl transition-all duration-200"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
