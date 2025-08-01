@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
-import { productService } from '../services/productService';
-import NavBar from '../components/Common/NavBar';
-import { detectSubcategory } from '../utils/subcategoryDetector';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { SUBCATEGORY_RULES } from '../config/subcategories';
+import { detectSubcategory } from '../utils/subcategoryDetector';
+import { useProductFilters } from '../hooks/useProductFilters';
+import { useProductData } from '../hooks/useProductData';
+import NavBar from '../components/Common/NavBar';
 import SidebarHierarchical from '../components/SidebarHierarchical';
 import MobileCategoriesModal from '../components/MobileCategoriesModal';
-import ProductCard from '../components/Home/ProductCard';
-import LoadingSkeleton from '../components/Home/LoadingSkeleton';
-import EmptyStates from '../components/Home/EmptyStates';
-import toast from 'react-hot-toast';
+import { productService } from '../services/productService';
 
-// Implementación nativa de debounce
+// Implementación de debounce
 const debounce = (func, wait) => {
     let timeout;
     return function executedFunction(...args) {
@@ -25,46 +23,40 @@ const debounce = (func, wait) => {
 };
 
 const ProductsPage = () => {
-    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const { categoryName } = useParams();
-
-    // Estados básicos
-    const [products, setProducts] = useState([]);
-    const [allProducts, setAllProducts] = useState([]);
-    const [totalProducts, setTotalProducts] = useState(0);
-    const [categories, setCategories] = useState([]);
-    const [brands, setBrands] = useState([]);
-    const [menuStructure, setMenuStructure] = useState({ categories: [] });
     const mobileModalRef = useRef();
     const desktopSidebarRef = useRef();
 
-    // Filtros simplificados
-    const [selectedCategory, setSelectedCategory] = useState(
-        categoryName || searchParams.get('category') || ''
-    );
-    const [selectedBrand, setSelectedBrand] = useState(searchParams.get('brand') || '');
-    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-    const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name');
-    const [selectedSubcategory, setSelectedSubcategory] = useState(searchParams.get('subcategory') || '');
-
-    // Estados de interfaz
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    // Estados de UI
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Configuración minimalista
-    const PRODUCTS_PER_PAGE = 20;
-    const [currentPage, setCurrentPage] = useState(1);
-    const [hasNextPage, setHasNextPage] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
+    // Hooks personalizados
+    const filters = useProductFilters(categoryName);
+    const productData = useProductData();
 
-    // Calcular categorías con sus subcategorías
+    // Versión debounced de filterProducts
+    const debouncedFilterProducts = useMemo(
+        () => debounce(() => {
+            if (productData.allProducts.length > 0) {
+                productData.setCurrentPage(1);
+                productData.filterProducts({
+                    selectedCategory: filters.selectedCategory,
+                    selectedBrand: filters.selectedBrand,
+                    searchTerm: filters.searchTerm,
+                    selectedSubcategory: filters.selectedSubcategory
+                }, 1, false);
+            }
+        }, 300),
+        [productData, filters.selectedCategory, filters.selectedBrand, filters.searchTerm, filters.selectedSubcategory]
+    );
+
+    // Calcular categorías con subcategorías
     const categoriesWithSubcategories = useMemo(() => {
         const categoryCount = {};
 
         // Contar productos por categoría
-        allProducts.forEach(product => {
+        productData.allProducts.forEach(product => {
             const categoryName = product.category;
             if (!categoryCount[categoryName]) {
                 categoryCount[categoryName] = {
@@ -99,219 +91,131 @@ const ProductsPage = () => {
                     .sort((a, b) => a.priority - b.priority)
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
-    }, [allProducts]);
+    }, [productData.allProducts]);
+
+    // Effects para sincronizar filtros
+    useEffect(() => {
+        const category = filters.searchParams.get('category') || '';
+        const subcategory = filters.searchParams.get('subcategory') || '';
+        const brand = filters.searchParams.get('brand') || '';
+        const search = filters.searchParams.get('search') || '';
+        const sort = filters.searchParams.get('sort') || 'name';
+
+        // Solo actualizar si realmente cambió para evitar bucles
+        if (filters.selectedCategory !== category) filters.setSelectedCategory(category);
+        if (filters.selectedSubcategory !== subcategory) filters.setSelectedSubcategory(subcategory);
+        if (filters.selectedBrand !== brand) filters.setSelectedBrand(brand);
+        if (filters.searchTerm !== search) filters.setSearchTerm(search);
+        if (filters.sortBy !== sort) filters.setSortBy(sort);
+    }, [filters.searchParams]);
 
     useEffect(() => {
-        loadData();
-    }, []);
-
-    useEffect(() => {
-        if (categoryName) {
-            setSelectedCategory(categoryName);
+        if (categoryName && categoryName !== filters.selectedCategory) {
+            filters.setSelectedCategory(categoryName);
         }
     }, [categoryName]);
 
     useEffect(() => {
-        updateURL();
-        if (allProducts.length > 0) {
-            setCurrentPage(1);
-            filterProducts(1, false);
-        }
-    }, [selectedCategory, selectedBrand, searchTerm, sortBy, selectedSubcategory]);
+        // Solo aplicar filtros cuando cambian, sin actualizar URL aquí
+        if (productData.allProducts.length > 0) {
+            const filtersData = {
+                selectedCategory: filters.selectedCategory,
+                selectedBrand: filters.selectedBrand,
+                searchTerm: filters.searchTerm,
+                selectedSubcategory: filters.selectedSubcategory
+            };
 
-    const loadData = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const [menuResponse, productsResponse] = await Promise.all([
-                productService.getMenuStructure(),
-                productService.getAllProducts(1, 50)
-            ]);
-
-            // Configurar estructura del menú
-            setMenuStructure(menuResponse || { categories: [] });
-
-            // Configurar productos
-            const productsData = Array.isArray(productsResponse?.data) ? productsResponse.data :
-                Array.isArray(productsResponse) ? productsResponse : [];
-
-            setAllProducts(productsData);
-            setProducts(productsData);
-            setTotalProducts(productsResponse.pagination?.totalCount || productsData.length);
-            setCategories(menuResponse?.categories?.map(cat => cat.name) || []);
-            setBrands([]);
-
-        } catch (err) {
-            setError('Error al cargar los datos');
-            toast.error('Error al cargar los productos');
-            console.error('Error loading data:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const updateURL = () => {
-        const params = new URLSearchParams();
-        if (selectedCategory) params.set('category', selectedCategory);
-        if (selectedBrand) params.set('brand', selectedBrand);
-        if (searchTerm) params.set('search', searchTerm);
-        if (sortBy !== 'name') params.set('sort', sortBy);
-        if (selectedSubcategory) params.set('subcategory', selectedSubcategory);
-
-        setSearchParams(params);
-    };
-
-    const filterProducts = async (page = 1, isLoadMore = false) => {
-        try {
-            if (!isLoadMore) {
-                setLoading(true);
+            if (filters.searchTerm.trim()) {
+                debouncedFilterProducts();
             } else {
-                setLoadingMore(true);
+                productData.setCurrentPage(1);
+                productData.filterProducts(filtersData, 1, false);
             }
-
-            const filters = {};
-            if (selectedCategory) filters.category = selectedCategory;
-            if (selectedBrand) filters.brand = selectedBrand;
-
-            if (searchTerm.trim()) {
-                // Para búsqueda, cargar todos los resultados
-                const searchResults = await productService.searchProducts(searchTerm);
-                let finalProducts = searchResults || [];
-
-                // Aplicar filtro de subcategoría también en búsqueda
-                if (selectedSubcategory && selectedSubcategory !== '') {
-                    finalProducts = finalProducts.filter(product => {
-                        const subcategory = detectSubcategory(product.name, selectedCategory || product.category);
-                        return subcategory?.id === selectedSubcategory;
-                    });
-                }
-
-                setProducts(finalProducts);
-                setTotalProducts(finalProducts.length);
-                setHasNextPage(false);
-                setCurrentPage(1);
-                return;
-            }
-
-            // Usar endpoint de filtrado con paginación
-            const response = await productService.filterProducts({
-                ...filters,
-                page: page,
-                pageSize: PRODUCTS_PER_PAGE
-            });
-
-            // Filtrar por subcategoría después de obtener datos
-            let finalProducts = response.data || [];
-            if (selectedSubcategory && selectedSubcategory !== '') {
-                finalProducts = finalProducts.filter(product => {
-                    // Si es una subcategoría definida (como nvidia, amd)
-                    const subcategory = detectSubcategory(product.name, selectedCategory);
-                    if (subcategory?.id === selectedSubcategory) {
-                        return true;
-                    }
-
-                    // Si es una marca (cuando no hay subcategorías definidas)
-                    return product.brand?.toLowerCase() === selectedSubcategory.toLowerCase();
-                });
-            }
-
-            if (isLoadMore) {
-                // Agregar productos a los existentes
-                setProducts(prev => [...prev, ...finalProducts]);
-            } else {
-                // Reemplazar productos (nuevo filtro)
-                setProducts(finalProducts);
-            }
-
-            setTotalProducts(response.pagination?.totalCount || 0);
-            setHasNextPage(response.pagination?.page < response.pagination?.totalPages);
-            setCurrentPage(page);
-
-        } catch (err) {
-            console.error('Error filtering products:', err);
-            toast.error('Error al filtrar productos');
-            if (!isLoadMore) {
-                setProducts([]);
-                setTotalProducts(0);
-                setHasNextPage(false);
-            }
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
         }
-    };
+    }, [filters.selectedCategory, filters.selectedBrand, filters.selectedSubcategory, productData.allProducts.length]);
 
-    // Función para cargar más productos
-    const loadMoreProducts = () => {
-        if (hasNextPage && !loadingMore) {
-            filterProducts(currentPage + 1, true);
+    // Separar la actualización de URL
+    useEffect(() => {
+        filters.updateURL();
+    }, [filters.selectedCategory, filters.selectedBrand, filters.searchTerm, filters.sortBy, filters.selectedSubcategory]);
+
+    // Aplicar filtros cuando hay filtros en la URL al cargar
+    useEffect(() => {
+        const hasFilters = filters.selectedCategory ||
+            filters.selectedSubcategory ||
+            filters.selectedBrand ||
+            filters.searchTerm;
+
+        if (hasFilters && productData.allProducts.length > 0) {
+            setTimeout(() => {
+                productData.filterProducts({
+                    selectedCategory: filters.selectedCategory,
+                    selectedBrand: filters.selectedBrand,
+                    searchTerm: filters.searchTerm,
+                    selectedSubcategory: filters.selectedSubcategory
+                }, 1, false);
+            }, 100);
         }
-    };
+    }, [productData.allProducts.length]);
 
-    // Handlers para el sidebar jerárquico
+    // Handlers
     const handleCategoryChange = (categoryName) => {
-        setSelectedCategory(categoryName);
-        setSelectedBrand('');
-        setSelectedSubcategory('');
+        filters.setSelectedCategory(categoryName);
+        filters.setSelectedBrand('');
+        filters.setSelectedSubcategory('');
     };
 
     const handleSubcategoryChange = (subcategoryId) => {
-        setSelectedSubcategory(subcategoryId);
+        filters.setSelectedSubcategory(subcategoryId);
+    };
+
+    const loadMoreProducts = () => {
+        productData.loadMoreProducts({
+            selectedCategory: filters.selectedCategory,
+            selectedBrand: filters.selectedBrand,
+            searchTerm: filters.searchTerm,
+            selectedSubcategory: filters.selectedSubcategory
+        });
     };
 
     const resetFiltersAndExpansion = () => {
-        setSearchTerm('');
-        setSelectedCategory('');
-        setSelectedBrand('');
-        setSelectedSubcategory('');
-        setSortBy('name');
-        setSearchParams({});
-
-        // Resetear expansión SOLO cuando limpias
-        if (mobileModalRef.current) {
-            mobileModalRef.current.resetExpansion();
-        }
-        if (desktopSidebarRef.current) {
-            desktopSidebarRef.current.resetExpansion();
-        }
+        filters.clearFilters();
+        if (mobileModalRef.current) mobileModalRef.current.resetExpansion();
+        if (desktopSidebarRef.current) desktopSidebarRef.current.resetExpansion();
     };
 
     const clearFilters = () => {
         resetFiltersAndExpansion();
     };
 
-    const hasActiveFilters = searchTerm || selectedCategory || selectedBrand || selectedSubcategory || sortBy !== 'name';
-    const displayedProducts = products;
-
     // Función para obtener el nombre de la subcategoría seleccionada
     const getSelectedSubcategoryName = () => {
-        if (!selectedSubcategory || !selectedCategory) return '';
+        if (!filters.selectedSubcategory || !filters.selectedCategory) return '';
 
         // Buscar en los productos para obtener el nombre de la subcategoría
-        const categoryProducts = allProducts.filter(product =>
-            product.category.toLowerCase() === selectedCategory.toLowerCase()
+        const categoryProducts = productData.allProducts.filter(product =>
+            product.category.toLowerCase() === filters.selectedCategory.toLowerCase()
         );
 
         for (const product of categoryProducts) {
-            const subcategory = detectSubcategory(product.name, selectedCategory);
-            if (subcategory?.id === selectedSubcategory) {
+            const subcategory = detectSubcategory(product.name, filters.selectedCategory);
+            if (subcategory?.id === filters.selectedSubcategory) {
                 return subcategory.name;
             }
 
             // Si es una marca, devolver el nombre de la marca
-            if (product.brand?.toLowerCase() === selectedSubcategory.toLowerCase()) {
+            if (product.brand?.toLowerCase() === filters.selectedSubcategory.toLowerCase()) {
                 return product.brand;
             }
         }
-        return selectedSubcategory; // Fallback: devolver el ID tal como está
+        return filters.selectedSubcategory; // Fallback: devolver el ID tal como está
     };
 
     return (
         <div className="min-h-screen bg-white">
             <NavBar
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
+                searchTerm={filters.searchTerm}
+                setSearchTerm={filters.setSearchTerm}
                 showSearch={true}
             />
 
@@ -323,9 +227,9 @@ const ProductsPage = () => {
                     <div className="hidden lg:block">
                         <SidebarHierarchical
                             ref={desktopSidebarRef}
-                            allProducts={allProducts}
-                            selectedCategory={selectedCategory}
-                            selectedSubcategory={selectedSubcategory}
+                            allProducts={productData.allProducts}
+                            selectedCategory={filters.selectedCategory}
+                            selectedSubcategory={filters.selectedSubcategory}
                             onCategoryChange={handleCategoryChange}
                             onSubcategoryChange={handleSubcategoryChange}
                             sidebarOpen={false}
@@ -333,7 +237,6 @@ const ProductsPage = () => {
                             categoriesWithSubcategories={categoriesWithSubcategories}
                         />
                     </div>
-
 
                     {/* Contenido principal */}
                     <div className="flex-1 min-w-0">
@@ -344,23 +247,15 @@ const ProductsPage = () => {
                             isOpen={sidebarOpen}
                             onClose={() => setSidebarOpen(false)}
                             categoriesWithSubcategories={categoriesWithSubcategories}
-                            allProducts={allProducts}
-                            selectedCategory={selectedCategory}
-                            selectedSubcategory={selectedSubcategory}
+                            allProducts={productData.allProducts}
+                            selectedCategory={filters.selectedCategory}
+                            selectedSubcategory={filters.selectedSubcategory}
                             onCategoryChange={handleCategoryChange}
                             onSubcategoryChange={handleSubcategoryChange}
                             getSelectedSubcategoryName={getSelectedSubcategoryName}
                         />
+
                         {/* Toggle para móvil */}
-                        {/* <button
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="lg:hidden w-full mb-6 px-4 py-3 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between"
-                        >
-                            <span>Ver categorías</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button> */}
                         <button
                             onClick={() => setSidebarOpen(!sidebarOpen)}
                             className="lg:hidden w-full mb-6 px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between shadow-sm"
@@ -377,15 +272,15 @@ const ProductsPage = () => {
                         </button>
 
                         {/* Breadcrumb de filtros activos */}
-                        {hasActiveFilters && (
+                        {filters.hasActiveFilters && (
                             <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
                                 <span className="text-gray-500">Filtros:</span>
-                                {selectedCategory && (
+                                {filters.selectedCategory && (
                                     <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-full capitalize">
-                                        {selectedCategory}
+                                        {filters.selectedCategory}
                                         <button
                                             onClick={() => {
-                                                resetFiltersAndExpansion(); // ← Usar la nueva función
+                                                resetFiltersAndExpansion();
                                             }}
                                             className="ml-2 hover:text-red-600 transition-colors"
                                         >
@@ -393,14 +288,14 @@ const ProductsPage = () => {
                                         </button>
                                     </span>
                                 )}
-                                {selectedSubcategory && (
+                                {filters.selectedSubcategory && (
                                     <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
                                         {getSelectedSubcategoryName()}
                                         <button
                                             onClick={() => {
-                                                setSelectedSubcategory('');
+                                                filters.setSelectedSubcategory('');
                                                 // Solo resetear cuando quitas subcategoría si no hay categoría seleccionada
-                                                if (!selectedCategory) {
+                                                if (!filters.selectedCategory) {
                                                     resetFiltersAndExpansion();
                                                 }
                                             }}
@@ -410,24 +305,24 @@ const ProductsPage = () => {
                                         </button>
                                     </span>
                                 )}
-                                {searchTerm && (
+                                {filters.searchTerm && (
                                     <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                                        "{searchTerm}"
+                                        "{filters.searchTerm}"
                                         <button
-                                            onClick={() => setSearchTerm('')}
+                                            onClick={() => filters.setSearchTerm('')}
                                             className="ml-2 hover:text-red-600 transition-colors"
                                         >
                                             ×
                                         </button>
                                     </span>
                                 )}
-                                {sortBy !== 'name' && (
+                                {filters.sortBy !== 'name' && (
                                     <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full">
-                                        {sortBy === 'price-asc' ? 'Precio ↑' :
-                                            sortBy === 'price-desc' ? 'Precio ↓' :
-                                                sortBy === 'stock' ? 'Stock ↓' : sortBy}
+                                        {filters.sortBy === 'price-asc' ? 'Precio ↑' :
+                                            filters.sortBy === 'price-desc' ? 'Precio ↓' :
+                                                filters.sortBy === 'stock' ? 'Stock ↓' : filters.sortBy}
                                         <button
-                                            onClick={() => setSortBy('name')}
+                                            onClick={() => filters.setSortBy('name')}
                                             className="ml-2 hover:text-red-600 transition-colors"
                                         >
                                             ×
@@ -438,7 +333,7 @@ const ProductsPage = () => {
                         )}
 
                         {/* Resultados */}
-                        {loading ? (
+                        {productData.loading ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {[...Array(6)].map((_, i) => (
                                     <div key={i} className="animate-pulse">
@@ -448,7 +343,7 @@ const ProductsPage = () => {
                                     </div>
                                 ))}
                             </div>
-                        ) : error ? (
+                        ) : productData.error ? (
                             <div className="text-center py-16">
                                 <div className="text-gray-400 mb-4">
                                     <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,13 +353,13 @@ const ProductsPage = () => {
                                 <h3 className="text-xl font-light text-gray-900 mb-2">Error al cargar</h3>
                                 <p className="text-gray-600 mb-6">No pudimos cargar los productos</p>
                                 <button
-                                    onClick={loadData}
+                                    onClick={productData.loadData}
                                     className="px-6 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors"
                                 >
                                     Intentar de nuevo
                                 </button>
                             </div>
-                        ) : totalProducts === 0 ? (
+                        ) : productData.totalProducts === 0 ? (
                             <div className="text-center py-16">
                                 <div className="text-gray-400 mb-4">
                                     <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,7 +368,7 @@ const ProductsPage = () => {
                                 </div>
                                 <h3 className="text-xl font-light text-gray-900 mb-2">Sin resultados</h3>
                                 <p className="text-gray-600 mb-6">No encontramos productos con estos filtros</p>
-                                {hasActiveFilters && (
+                                {filters.hasActiveFilters && (
                                     <button
                                         onClick={clearFilters}
                                         className="px-6 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors"
@@ -486,11 +381,16 @@ const ProductsPage = () => {
                             <>
                                 {/* Grid de productos minimalista */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                                    {displayedProducts.map((product, index) => (
+                                    {productData.products.map((product, index) => (
                                         <div
                                             key={product.id}
                                             className="group cursor-pointer"
-                                            onClick={() => navigate(`/product/${product.id}`)}
+                                            onClick={() => {
+                                                // Construir URL con filtros actuales
+                                                const currentFilters = filters.searchParams.toString();
+                                                const productUrl = `/product/${product.id}${currentFilters ? `?from=products&${currentFilters}` : '?from=products'}`;
+                                                navigate(productUrl);
+                                            }}
                                         >
                                             {/* Imagen del producto */}
                                             <div className="aspect-square overflow-hidden rounded-lg bg-white mb-4 group-hover:opacity-75 transition-opacity">
@@ -523,19 +423,19 @@ const ProductsPage = () => {
                                 </div>
 
                                 {/* Call to action para ver más */}
-                                {products.length > 0 && (
+                                {productData.products.length > 0 && (
                                     <div className="text-center py-8 border-t border-gray-100">
                                         <p className="text-gray-600 mb-6">
-                                            Mostrando {products.length} de {totalProducts.toLocaleString()} productos
+                                            Mostrando {productData.products.length} de {productData.totalProducts.toLocaleString()} productos
                                         </p>
 
-                                        {hasNextPage ? (
+                                        {productData.hasNextPage ? (
                                             <button
                                                 onClick={loadMoreProducts}
-                                                disabled={loadingMore}
+                                                disabled={productData.loadingMore}
                                                 className="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
                                             >
-                                                {loadingMore ? (
+                                                {productData.loadingMore ? (
                                                     <>
                                                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -544,10 +444,10 @@ const ProductsPage = () => {
                                                         Cargando...
                                                     </>
                                                 ) : (
-                                                    `Cargar más productos (${totalProducts - products.length} restantes)`
+                                                    `Cargar más productos (${productData.totalProducts - productData.products.length} restantes)`
                                                 )}
                                             </button>
-                                        ) : products.length > 0 && (
+                                        ) : productData.products.length > 0 && (
                                             <div className="flex items-center justify-center text-gray-500">
                                                 <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />

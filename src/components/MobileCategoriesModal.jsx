@@ -51,6 +51,7 @@ const MobileCategoriesModal = forwardRef(({
                     onClick={() => {
                         onCategoryChange('');
                         onSubcategoryChange('');
+                        setExpandedCategories(new Set());
                         onClose();
                     }}
                     className={`w-full text-left p-3 rounded-lg mb-3 transition-colors ${selectedCategory === ''

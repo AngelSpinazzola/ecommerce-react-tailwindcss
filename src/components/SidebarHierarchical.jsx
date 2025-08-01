@@ -79,6 +79,7 @@ const SidebarHierarchical = forwardRef(({
                     onClick={() => {
                         onCategoryChange('');
                         onSubcategoryChange('');
+                        setExpandedCategories(new Set());
                         setSidebarOpen(false);
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedCategory === ''
