@@ -64,9 +64,9 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
 
             {showDropdown && (
                 <div className="absolute right-0 mt-2 w-56 bg-gray-900 rounded-xl shadow-2xl border border-gray-800 z-50 overflow-hidden">
-                    <div className="p-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20 border-b border-gray-800">
+                    {/* <div className="p-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20 border-b border-gray-800">
                         <p className="text-sm font-semibold text-white">{user?.firstName} {user?.lastName}</p>
-                        <p className="text-xs text-gray-400">{user?.email}</p>
+                        <p className="text-xs text-gray-400">{user?.email}</p> */}
                         {user?.role === 'Admin' && (
                             <div className="mt-2">
                                 <span className="inline-block px-2 py-1 text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold">
@@ -74,18 +74,8 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                 </span>
                             </div>
                         )}
-                    </div>
+                    {/* </div> */}
                     <div className="py-2">
-                        <Link
-                            to="/my-orders"
-                            className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 md:hover:bg-nova-cyan/10 md:hover:text-nova-cyan transition-all duration-200"
-                            onClick={() => setShowDropdown(false)}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            <span>Mis Órdenes</span>
-                        </Link>
                         <Link
                             to="/my-profile"
                             className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 hover:bg-nova-cyan/10 hover:text-nova-cyan transition-all duration-200"
@@ -95,6 +85,16 @@ const NavBar = ({ searchTerm, setSearchTerm, showSearch = false }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             <span>Mi Perfil</span>
+                        </Link>
+                        <Link
+                            to="/my-orders"
+                            className="flex items-center space-x-3 px-4 py-3 text-sm text-nova-gray-400 md:hover:bg-nova-cyan/10 md:hover:text-nova-cyan transition-all duration-200"
+                            onClick={() => setShowDropdown(false)}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            <span>Mis Órdenes</span>
                         </Link>
                         <div className="border-t border-gray-800 mt-2">
                             <button

@@ -16,6 +16,7 @@
     "check-env": "echo \"Current API URL: $VITE_API_BASE_URL\""
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
     "axios": "^1.10.0",
     "lodash": "^4.17.21",

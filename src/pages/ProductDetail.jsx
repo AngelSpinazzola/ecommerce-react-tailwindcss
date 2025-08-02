@@ -4,9 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { productService } from '../services/productService';
 import NavBar from '../components/Common/NavBar';
-import SecondaryNavBar from '../components/Common/SecondaryNavBar';
 import toast from 'react-hot-toast';
-
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
 import 'swiper/css';
@@ -25,6 +23,7 @@ const ProductDetail = () => {
     const [error, setError] = useState(null);
     const [activeSlide, setActiveSlide] = useState(0);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const [hoveredImageIndex, setHoveredImageIndex] = useState(null);
     const swiperRef = useRef(null);
     const { addToCart, isInCart, getItemQuantity, getCartItemsCount } = useCart();
 
@@ -47,6 +46,23 @@ const ProductDetail = () => {
 
     const handleAddToCart = () => {
         addToCart(product, 1);
+    };
+
+    // Función para cambiar la imagen principal (hover o click)
+    const handleImageChange = (index) => {
+        setActiveSlide(index);
+        swiperRef.current?.slideTo(index);
+    };
+
+    // Función para manejar el hover sobre thumbnails
+    const handleThumbnailHover = (index) => {
+        setHoveredImageIndex(index);
+        handleImageChange(index);
+    };
+
+    // Función para manejar cuando se sale del hover
+    const handleThumbnailLeave = () => {
+        setHoveredImageIndex(null);
     };
 
     // Crea array de imágenes para mostrar
@@ -273,29 +289,42 @@ const ProductDetail = () => {
                                         </>
                                     )}
                                 </div>
-                                {/* Thumbnails (mantén los originales o usa Swiper también) */}
+                                {/* Thumbnails con hover mejorado */}
                                 {displayImages.length > 1 && (
                                     <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide mt-4">
                                         {displayImages.map((image, index) => (
                                             <button
                                                 key={image.id}
-                                                onClick={() => {
-                                                    setActiveSlide(index);
-                                                    swiperRef.current?.slideTo(index);
-                                                }}
-                                                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer ${activeSlide === index
-                                                    ? 'border-purple-500 shadow-lg transform scale-105'
-                                                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                                onMouseEnter={() => handleThumbnailHover(index)}
+                                                onMouseLeave={handleThumbnailLeave}
+                                                onClick={() => handleImageChange(index)}
+                                                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 cursor-pointer relative group ${activeSlide === index
+                                                        ? 'border-purple-500 shadow-lg transform scale-105'
+                                                        : 'border-gray-200 hover:border-purple-300 hover:shadow-md hover:scale-105'
                                                     }`}
                                             >
                                                 <img
                                                     src={productService.getImageUrl(image.url)}
                                                     alt={`${product.name} ${index + 1}`}
-                                                    className="w-full h-full object-cover"
+                                                    className={`w-full h-full object-contain transition-all duration-300 ${activeSlide === index
+                                                            ? 'brightness-100'
+                                                            : 'brightness-90 group-hover:brightness-100'
+                                                        }`}
                                                     onError={(e) => {
                                                         e.target.src = 'https://picsum.photos/80/80?random=' + (product.id + index);
                                                     }}
                                                 />
+
+                                                {/* Overlay sutil en hover */}
+                                                <div className={`absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${activeSlide === index ? 'opacity-20' : ''
+                                                    }`} />
+
+                                                {/* Indicador de imagen activa */}
+                                                {activeSlide === index && (
+                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-purple-500 rounded-full border-2 border-white flex items-center justify-center">
+                                                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                    </div>
+                                                )}
                                             </button>
                                         ))}
                                     </div>

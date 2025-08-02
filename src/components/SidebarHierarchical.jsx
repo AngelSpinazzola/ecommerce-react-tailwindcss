@@ -1,4 +1,4 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 
 const SidebarHierarchical = forwardRef(({
     allProducts,
@@ -12,6 +12,17 @@ const SidebarHierarchical = forwardRef(({
 }, ref) => {
     const [expandedCategories, setExpandedCategories] = useState(new Set([selectedCategory]));
 
+    // Sincronizar expansión con categoría seleccionada
+    useEffect(() => {
+        if (selectedCategory) {
+            // Solo expandir la categoría seleccionada
+            setExpandedCategories(new Set([selectedCategory]));
+        } else {
+            // Si no hay categoría seleccionada, plegar todas
+            setExpandedCategories(new Set());
+        }
+    }, [selectedCategory]);
+
     // Exponer función para resetear desde el padre
     useImperativeHandle(ref, () => ({
         resetExpansion: () => {
@@ -24,6 +35,8 @@ const SidebarHierarchical = forwardRef(({
         if (newExpanded.has(categoryName)) {
             newExpanded.delete(categoryName);
         } else {
+            // Solo expandir esta categoría, plegar todas las demás
+            newExpanded.clear();
             newExpanded.add(categoryName);
         }
         setExpandedCategories(newExpanded);
@@ -33,11 +46,6 @@ const SidebarHierarchical = forwardRef(({
         onCategoryChange(categoryName);
         onSubcategoryChange(''); // Limpiar subcategoría
         setSidebarOpen(false);
-
-        // Auto-expandir la categoría seleccionada
-        const newExpanded = new Set(expandedCategories);
-        newExpanded.add(categoryName);
-        setExpandedCategories(newExpanded);
     };
 
     const handleSubcategoryClick = (subcategoryId, categoryName) => {
@@ -48,8 +56,7 @@ const SidebarHierarchical = forwardRef(({
         onSubcategoryChange(subcategoryId);
         setSidebarOpen(false);
     };
-
-
+    
     return (
         <div className={`
             fixed lg:static top-0 left-0 z-50 lg:z-auto

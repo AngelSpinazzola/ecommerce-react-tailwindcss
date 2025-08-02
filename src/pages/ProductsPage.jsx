@@ -132,7 +132,7 @@ const ProductsPage = () => {
                 productData.filterProducts(filtersData, 1, false);
             }
         }
-    }, [filters.selectedCategory, filters.selectedBrand, filters.selectedSubcategory, filters.searchTerm, productData.allProducts.length]); 
+    }, [filters.selectedCategory, filters.selectedBrand, filters.selectedSubcategory, filters.searchTerm, productData.allProducts.length]);
 
     // Separar la actualización de URL
     useEffect(() => {
@@ -166,6 +166,7 @@ const ProductsPage = () => {
     };
 
     const handleSubcategoryChange = (subcategoryId) => {
+        // Limpiar primero cualquier subcategoría anterior
         filters.setSelectedSubcategory(subcategoryId);
     };
 
@@ -241,35 +242,39 @@ const ProductsPage = () => {
                     {/* Contenido principal */}
                     <div className="flex-1 min-w-0">
 
-                        {/* Modal Mobile */}
-                        <MobileCategoriesModal
-                            ref={mobileModalRef}
-                            isOpen={sidebarOpen}
-                            onClose={() => setSidebarOpen(false)}
-                            categoriesWithSubcategories={categoriesWithSubcategories}
-                            allProducts={productData.allProducts}
-                            selectedCategory={filters.selectedCategory}
-                            selectedSubcategory={filters.selectedSubcategory}
-                            onCategoryChange={handleCategoryChange}
-                            onSubcategoryChange={handleSubcategoryChange}
-                            getSelectedSubcategoryName={getSelectedSubcategoryName}
-                        />
-
-                        {/* Toggle para móvil */}
-                        <button
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="lg:hidden w-full mb-6 px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between shadow-sm"
-                        >
-                            <div className="flex items-center space-x-2">
-                                <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        {/* Container del menú móvil */}
+                        <div className="lg:hidden mb-6">
+                            {/* Toggle para móvil - FIJO */}
+                            <button
+                                onClick={() => setSidebarOpen(!sidebarOpen)}
+                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between shadow-sm"
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    <span className="font-medium">Categorías</span>
+                                </div>
+                                <svg className={`w-4 h-4 transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                                 </svg>
-                                <span className="font-medium">Categorías</span>
-                            </div>
-                            <svg className={`w-4 h-4 transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                            </button>
+
+                            {/* Modal Mobile - DENTRO del container */}
+                            <MobileCategoriesModal
+                                key={`${filters.selectedCategory}-${filters.selectedSubcategory}`}
+                                ref={mobileModalRef}
+                                isOpen={sidebarOpen}
+                                onClose={() => setSidebarOpen(false)}
+                                categoriesWithSubcategories={categoriesWithSubcategories}
+                                allProducts={productData.allProducts}
+                                selectedCategory={filters.selectedCategory}
+                                selectedSubcategory={filters.selectedSubcategory}
+                                onCategoryChange={handleCategoryChange}
+                                onSubcategoryChange={handleSubcategoryChange}
+                                getSelectedSubcategoryName={getSelectedSubcategoryName}
+                            />
+                        </div>
 
                         {/* Breadcrumb de filtros activos */}
                         {filters.hasActiveFilters && (
