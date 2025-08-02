@@ -101,29 +101,6 @@ export const SUBCATEGORY_RULES = {
         }
     },
 
-    'fuentes': {
-        name: 'Fuentes de Poder',
-        types: {
-            MODULAR: {
-                id: 'modular',
-                name: 'Modular',
-                keywords: ['modular', 'fully modular', 'completamente modular'],
-                priority: 1
-            },
-            SEMI_MODULAR: {
-                id: 'semi-modular',
-                name: 'Semi-Modular',
-                keywords: ['semi modular', 'semi-modular', 'parcialmente modular'],
-                priority: 2
-            },
-            NO_MODULAR: {
-                id: 'no-modular',
-                name: 'No Modular',
-                keywords: ['no modular', 'fixed', 'cables fijos'],
-                priority: 3
-            }
-        }
-    },
 
     'memorias ram': {
         name: 'Memorias RAM',
