@@ -56,30 +56,32 @@ const SidebarHierarchical = forwardRef(({
         onSubcategoryChange(subcategoryId);
         setSidebarOpen(false);
     };
-    
+
     return (
         <div className={`
             fixed lg:static top-0 left-0 z-50 lg:z-auto
-            w-80 lg:w-64 h-full lg:h-auto bg-white
+            w-80 lg:w-64 h-full lg:h-auto bg-[#2c2c2c]
             transform transition-transform duration-300 ease-in-out
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            border-r border-gray-100 flex-shrink-0
+            flex-shrink-0 shadow-2xl lg:shadow-none
         `}>
             {/* Header móvil */}
-            <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-100">
-                <h3 className="text-lg font-medium text-gray-900">Categorías</h3>
+            <div className="lg:hidden flex items-center justify-between p-4 border-b border-[#3a3a3a]">
+                <h3 className="text-sm font-medium text-white">Categorías</h3>
                 <button
                     onClick={() => setSidebarOpen(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-[#3a3a3a] rounded-lg transition-colors text-gray-400 hover:text-white"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-
-            {/* Contenido del sidebar */}
-            <div className="p-4 space-y-1 max-h-full overflow-y-auto">
+            <div className="hidden lg:block p-4 border-b border-[#3a3a3a]">
+                <h3 className="text-sm font-medium text-white">Categorías</h3>
+            </div>
+            {/* Contenido del sidebar - SIN header en desktop */}
+            <div className="py-3 max-h-full overflow-y-auto overflow-x-hidden">
 
                 {/* Todos los productos */}
                 <button
@@ -89,28 +91,16 @@ const SidebarHierarchical = forwardRef(({
                         setExpandedCategories(new Set());
                         setSidebarOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedCategory === ''
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-700 hover:bg-gray-50'
+                    className={`w-full text-left px-4 py-2.5 transition-colors duration-150 flex items-center justify-between group ${selectedCategory === ''
+                        ? 'bg-[#3a3a3a] text-white'
+                        : 'text-gray-300 hover:bg-[#3a3a3a] hover:text-white'
                         }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <span className="font-medium">Todos los productos</span>
-                        <span className="text-sm opacity-75">
-                            {allProducts.length}
-                        </span>
-                    </div>
+                    <span className="text-sm font-medium">Todos los productos</span>
                 </button>
 
-                {/* Separador */}
-                <div className="border-t border-gray-100 my-4"></div>
-
-                {/* Título de sección */}
-                <div className="px-3 py-2">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Categorías
-                    </h4>
-                </div>
+                {/* Separador sutil */}
+                <div className="h-px bg-[#3a3a3a] mx-3 my-3"></div>
 
                 {/* Categorías con estructura jerárquica */}
                 {categoriesWithSubcategories.map((category) => {
@@ -128,67 +118,59 @@ const SidebarHierarchical = forwardRef(({
                     const hasExpandableContent = hasSubcategories || categoryBrands.length > 0;
 
                     return (
-                        <div key={category.name} className="space-y-1">
+                        <div key={category.name}>
                             {/* Categoría principal */}
-                            <div className="flex items-stretch">
-                                <button onClick={() => handleCategoryClick(category.name)}
-                                    className={`flex-1 text-left px-3 py-2 rounded-l-lg transition-colors ${isSelected
-                                        ? 'bg-gray-900 text-white'
-                                        : 'text-gray-700 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="capitalize font-medium">{category.name}</span>
-                                        <span className="text-sm opacity-75">
-                                            {category.count}
-                                        </span>
+                            {/* Categoría principal - UN SOLO BOTÓN */}
+                            <button
+                                onClick={() => handleCategoryClick(category.name)}
+                                className={`w-full text-left px-4 py-2.5 transition-colors duration-150 flex items-center justify-between group ${isSelected
+                                    ? 'bg-[#3a3a3a] text-white'
+                                    : 'text-gray-300 hover:bg-[#3a3a3a] hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center justify-between w-full">
+                                    <span className="capitalize text-sm font-medium">{category.name}</span>
+                                    <div className="flex items-center gap-2">
+                                        {/* Flecha integrada */}
+                                        {hasExpandableContent && (
+                                            <span
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleCategory(category.name);
+                                                }}
+                                                className="text-gray-500 group-hover:text-gray-300 cursor-pointer"
+                                            >
+                                                <svg
+                                                    className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''
+                                                        }`}
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </span>
+                                        )}
                                     </div>
-                                </button>
-
-                                {/* Botón expandir/contraer */}
-                                {hasExpandableContent && (
-                                    <button
-                                        onClick={() => toggleCategory(category.name)}
-                                        className={`px-2 py-2 rounded-r-lg transition-colors border-l ${isSelected
-                                            ? 'bg-gray-800 text-white border-gray-700 hover:bg-gray-700'
-                                            : 'text-gray-500 hover:bg-gray-100 border-gray-200'
-                                            }`}
-                                    >
-                                        <svg
-                                            className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''
-                                                }`}
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                )}
-                            </div>
+                                </div>
+                            </button>
 
                             {/* Subcategorías o Marcas */}
                             {isExpanded && (
-                                <div className="ml-6 space-y-1 border-l border-gray-200 pl-3">
+                                <div className="ml-4 border-l border-[#3a3a3a]">
                                     {hasSubcategories ? (
                                         // Mostrar subcategorías definidas
                                         category.subcategories.map((subcategory) => (
                                             <button
                                                 key={subcategory.id}
                                                 onClick={() => handleSubcategoryClick(subcategory.id, category.name)}
-                                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm ${selectedSubcategory === subcategory.id
-                                                    ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                className={`w-full text-left px-3 py-2 ml-1 transition-colors duration-150 flex items-center justify-between group ${selectedSubcategory === subcategory.id
+                                                    ? 'bg-[#3a3a3a] text-white'
+                                                    : 'text-gray-400 hover:bg-[#3a3a3a] hover:text-gray-200'
                                                     }`}
                                             >
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex-1">
-                                                        <div className="font-medium">{subcategory.name}</div>
-                                                    </div>
-                                                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                                                        {subcategory.count}
-                                                    </span>
-                                                </div>
+                                                <span className="text-sm">{subcategory.name}</span>
                                             </button>
                                         ))
                                     ) : (
@@ -212,19 +194,12 @@ const SidebarHierarchical = forwardRef(({
                                                     <button
                                                         key={brand}
                                                         onClick={() => handleSubcategoryClick(brand.toLowerCase(), category.name)}
-                                                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm ${isBrandSelected
-                                                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                        className={`w-full text-left px-3 py-2 ml-1 transition-colors duration-150 flex items-center justify-between group ${isBrandSelected
+                                                            ? 'bg-[#3a3a3a] text-white'
+                                                            : 'text-gray-400 hover:bg-[#3a3a3a] hover:text-gray-200'
                                                             }`}
                                                     >
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex-1">
-                                                                <div className="font-medium">{brand}</div>
-                                                            </div>
-                                                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                                                                {brandCount}
-                                                            </span>
-                                                        </div>
+                                                        <span className="text-sm">{brand}</span>
                                                     </button>
                                                 );
                                             });

@@ -1,3 +1,4 @@
+
 import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 
 const MobileCategoriesModal = forwardRef(({
@@ -61,9 +62,10 @@ const MobileCategoriesModal = forwardRef(({
     if (!isOpen) return null;
 
     return (
-        <div className="lg:hidden bg-white border border-gray-200 rounded-lg shadow-lg mb-6">
-            {/* Contenido desplegable - IGUAL QUE DESKTOP */}
-            <div className="max-h-96 overflow-y-auto p-4 space-y-1">
+        <div className="lg:hidden bg-[#2c2c2c] border border-gray-600 rounded-lg shadow-2xl mb-6 overflow-hidden overflow-x-hidden">
+            {/* Contenido desplegable */}
+            <div className="py-3 max-h-96 overflow-y-auto overflow-x-hidden">
+                {/* Todos los productos */}
                 <button
                     onClick={() => {
                         onCategoryChange('');
@@ -71,28 +73,19 @@ const MobileCategoriesModal = forwardRef(({
                         setExpandedCategories(new Set());
                         onClose();
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedCategory === ''
-                            ? 'bg-gray-900 text-white'
-                            : 'text-gray-700'
+                    className={`w-full text-left px-4 py-2.5 transition-colors duration-150 flex items-center justify-between group ${selectedCategory === ''
+                        ? 'bg-[#3a3a3a] text-white'
+                        : 'text-gray-300'
                         }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <span className="font-medium">Todos los productos</span>
-                        <span className={`text-sm ${selectedCategory === ''
-                                ? 'text-gray-400'
-                                : 'text-gray-500'
-                            }`}>
-                            {allProducts.length}
-                        </span>
-                    </div>
+                    <span className="text-sm font-medium">Todos los productos</span>
                 </button>
 
-                {/* Separador - IGUAL QUE DESKTOP */}
-                <div className="border-t border-gray-100 my-4"></div>
+                {/* Separador sutil */}
+                <div className="h-px bg-[#3a3a3a] mx-3 my-3"></div>
 
-
-                {/* Lista de categorías - IGUAL QUE DESKTOP */}
-                <div className="space-y-1">
+                {/* Lista de categorías */}
+                <div>
                     {categoriesWithSubcategories.map((category) => {
                         const isSelected = selectedCategory === category.name;
                         const isExpanded = expandedCategories.has(category.name);
@@ -108,73 +101,62 @@ const MobileCategoriesModal = forwardRef(({
                         const hasExpandableContent = hasSubcategories || categoryBrands.length > 0;
 
                         return (
-                            <div key={category.name} className="space-y-1">
-                                {/* Categoría principal - IGUAL QUE DESKTOP */}
-                                <div className="flex items-stretch">
-                                    <button
-                                        onClick={() => handleCategoryClick(category.name)}
-                                        className={`flex-1 text-left px-3 py-2 rounded-l-lg transition-colors hover:bg-transparent ${isSelected
-                                                ? 'bg-gray-900 text-white'
-                                                : 'text-gray-700'
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <span className="capitalize font-medium">{category.name}</span>
-                                            <span className={`text-sm ${isSelected
-                                                    ? 'text-gray-400'
-                                                    : 'text-gray-500'
-                                                }`}>
-                                                {category.count}
-                                            </span>
+                            <div key={category.name}>
+                                {/* Categoría principal - igual que desktop */}
+                                <button
+                                    onClick={() => handleCategoryClick(category.name)}
+                                    className={`w-full text-left px-4 py-2.5 transition-colors duration-150 flex items-center justify-between group ${isSelected
+                                        ? 'bg-[#3a3a3a] text-white'
+                                        : 'text-gray-300'
+                                        }`}
+                                >
+                                    <div className="flex items-center justify-between w-full">
+                                        <span className="capitalize text-sm font-medium">{category.name}</span>
+                                        <div className="flex items-center gap-2">
+                                            {/* Flecha integrada */}
+                                            {hasExpandableContent && (
+                                                <span
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleCategory(category.name);
+                                                    }}
+                                                    className="text-gray-500 cursor-pointer"
+                                                >
+                                                    <svg
+                                                        className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''
+                                                            }`}
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2}
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </span>
+                                            )}
                                         </div>
-                                    </button>
+                                    </div>
+                                </button>
 
-                                    {/* Botón expandir/contraer - IGUAL QUE DESKTOP */}
-                                    {hasExpandableContent && (
-                                        <button
-                                            onClick={() => toggleCategory(category.name)}
-                                            className={`px-2 py-2 rounded-r-lg transition-colors border-l ${isSelected
-                                                    ? 'bg-gray-800 text-white border-gray-700'
-                                                    : 'text-gray-500 border-gray-200'
-                                                }`}
-                                        >
-                                            <svg
-                                                className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''
-                                                    }`}
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Subcategorías - IGUAL QUE DESKTOP */}
-                                {isExpanded && hasExpandableContent && (
-                                    <div className="ml-6 space-y-1 border-l border-gray-200 pl-3">
+                                {/* Subcategorías - igual que desktop */}
+                                {isExpanded && (
+                                    <div className="ml-4 border-l border-[#3a3a3a]">
                                         {hasSubcategories ? (
+                                            // Mostrar subcategorías definidas
                                             category.subcategories.map((subcategory) => (
                                                 <button
                                                     key={subcategory.id}
                                                     onClick={() => handleSubcategoryClick(subcategory.id, category.name)}
-                                                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm ${selectedSubcategory === subcategory.id && selectedCategory === category.name
-                                                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                                                            : 'text-gray-600'
+                                                    className={`w-full text-left px-3 py-2 ml-1 transition-colors duration-150 group ${selectedSubcategory === subcategory.id && selectedCategory === category.name
+                                                        ? 'bg-[#3a3a3a] text-white'
+                                                        : 'text-gray-400'
                                                         }`}
                                                 >
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex-1">
-                                                            <div className="font-medium">{subcategory.name}</div>
-                                                        </div>
-                                                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                                                            {subcategory.count}
-                                                        </span>
-                                                    </div>
+                                                    <span className="text-sm">{subcategory.name}</span>
                                                 </button>
                                             ))
                                         ) : (
+                                            // Mostrar marcas cuando no hay subcategorías
                                             categoryBrands.map((brand) => {
                                                 const brandCount = allProducts.filter(p =>
                                                     p.category === category.name && p.brand === brand
@@ -185,19 +167,12 @@ const MobileCategoriesModal = forwardRef(({
                                                     <button
                                                         key={brand}
                                                         onClick={() => handleSubcategoryClick(brand.toLowerCase(), category.name)}
-                                                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm ${isBrandSelected
-                                                                ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                                                                : 'text-gray-600'
+                                                        className={`w-full text-left px-3 py-2 ml-1 transition-colors duration-150 group ${isBrandSelected
+                                                            ? 'bg-[#3a3a3a] text-white'
+                                                            : 'text-gray-400'
                                                             }`}
                                                     >
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex-1">
-                                                                <div className="font-medium">{brand}</div>
-                                                            </div>
-                                                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                                                                {brandCount}
-                                                            </span>
-                                                        </div>
+                                                        <span className="text-sm">{brand}</span>
                                                     </button>
                                                 );
                                             })
